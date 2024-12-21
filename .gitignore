@@ -1,3 +1,4 @@
+/build
+/dist
 /caddy.exe
-/logo.ico
-/seu.ico
+/*.ico

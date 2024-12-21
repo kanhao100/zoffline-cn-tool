@@ -1,7 +1,11 @@
 
 # Zoffline-CN Tool
 
-Zoffline-CN Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成各种 Zwift 相关的配置和管理任务。
+Zoffline-CN Tool is a GUI tool for switching between Zwift's official servers and community servers.
+
+Zoffline-CN Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 在大陆地区特殊网络环境的相关的配置任务。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
+
+For English-speaking users, this project may not be relevant as it's specifically designed for users in mainland China. If you need English support, please open an issue.
 
 ## 功能特点
 
@@ -45,8 +49,8 @@ Zoffline-CN Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 
 2. 克隆仓库:
    ```bash
-   git clone https://github.com/your-repo/Zoffline-CN-Tool.git
-   cd Zoffline-CN-Tool
+   git clone https://github.com/kanhao100/zoffline-cn-tool.git
+   cd zoffline-cn-tool
    ```
 
 3. 下载 Caddy (https://caddyserver.com/download) 并重命名为 Caddy.exe，放置在项目根目录
