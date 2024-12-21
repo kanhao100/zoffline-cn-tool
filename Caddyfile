@@ -1,0 +1,52 @@
+{
+    auto_https off
+    debug
+    log {
+        output file caddy.log
+        format console
+        level DEBUG
+    }
+}
+
+# HTTPS (443)
+:443 {
+    # Frontend - Local Client
+    tls cert-zwift-com.pem key-zwift-com.pem
+    # tls mixed-cert-zwift-com.pem mixed-key-zwift-com.pem
+    
+    @all_hosts host cdn.zwift.com secure.zwift.com launcher.zwift.com us-or-rly101.zwift.com
+    handle @all_hosts {
+        reverse_proxy {$ZWIFT_SERVER}:443 {
+            # header_up Host ""
+            transport http {
+                tls_insecure_skip_verify
+                # tls_server_name "cdn.zwift.com"
+                tls_server_name {$ZWIFT_SERVER}
+                # Backend - Remote Server
+                tls_client_auth mixed-cert-zwift-com.pem mixed-key-zwift-com.pem
+                # tls_client_auth cert-zwift-com.pem key-zwift-com.pem
+            }
+        }
+    }
+}
+
+# 80
+cdn.zwift.com:80, secure.zwift.com:80, launcher.zwift.com:80, us-or-rly101.zwift.com:80 {
+    reverse_proxy {$ZWIFT_SERVER}:80 {
+        header_up Host ""
+    }
+}
+
+# 3024 
+cdn.zwift.com:3024, secure.zwift.com:3024, launcher.zwift.com:3024, us-or-rly101.zwift.com:3024 {
+    reverse_proxy {$ZWIFT_SERVER}:3024 {
+        header_up Host ""
+    }
+}
+
+# 3025 
+cdn.zwift.com:3025, secure.zwift.com:3025, launcher.zwift.com:3025, us-or-rly101.zwift.com:3025 {
+    reverse_proxy {$ZWIFT_SERVER}:3025 {
+        header_up Host ""
+    }
+}
