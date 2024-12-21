@@ -134,6 +134,15 @@ For English-speaking users, this project may not be relevant as it's specificall
 - 切换服务器时建议先关闭正在运行的 Zwift
 - 需要管理员权限
 
+## 致谢项
+
+- Python 3 (https://www.python.org/downloads/)
+- FreeSimpleGUI (https://github.com/spyoungtech/FreeSimpleGui)
+- Caddy (https://caddyserver.com/download)
+
+- Zwift Offline (https://github.com/zoffline/zwift-offline)
+- Zoffline-helper (https://github.com/oldnapalm/zoffline-helper)
+
 ## 免责声明
 
 本工具仅用于学习和研究目的。用户需要遵守相关服务条款和法律法规。使用本工具所产生的任何后果由用户自行承担。
