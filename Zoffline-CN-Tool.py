@@ -160,7 +160,7 @@ def find_zwift_location():
         if folder_path:
             # 检查选择的文件夹是否包含ZwiftApp.exe
             if os.path.exists(os.path.join(folder_path, "ZwiftApp.exe")):
-                print(f"已���择Zwift安装位置: {folder_path}")
+                print(f"已选择Zwift安装位置: {folder_path}")
                 # 保存用户选择的位置
                 with open(location_file, 'w') as f:
                     f.write(f'"{folder_path}"')
@@ -199,7 +199,7 @@ def modify_hosts_file():
         with open(hosts_path, 'r') as file:
             lines = file.readlines()
 
-        # 移除已存在的Zwift相��条目
+        # 移除已存在的Zwift相关条目
         filtered_lines = [line for line in lines if 'zwift.com' not in line.lower()]
 
         # 添加新的域名解析

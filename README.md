@@ -1,9 +1,9 @@
 
-# Zoffline-CN Tool
+# Zoffline-CN-Tool
 
-Zoffline-CN Tool is a GUI tool for switching between Zwift's official servers and community servers.
+Zoffline-CN-Tool is a GUI tool for switching between Zwift's official servers and community servers.
 
-Zoffline-CN Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 在大陆地区特殊网络环境的相关的配置任务。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
+Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 在大陆地区特殊网络环境的相关的配置任务。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
 
 For English-speaking users, this project may not be relevant as it's specifically designed for users in mainland China. If you need English support, please open an issue.
 
@@ -12,14 +12,13 @@ For English-speaking users, this project may not be relevant as it's specificall
 ### 主要功能
 - 一键启动社区服 Zwift
 - 一键启动官服 Zwift
-- 更新下载资源文件
-- 自动检测进程状态
+- 自动检查社区服版本和本地版本
 
 ### 高级选项
-- Host 设置管理
-- 系统证书导入
-- 客户端证书导入
-- Caddy 服务器管理
+- 自动 Host 设置
+- 自动系统证书导入
+- 自动客户端证书导入
+- Caddy 反向代理后台单独启动
 - 版本查询和管理
 - 系统代理检查
 - 端口占用检查
@@ -36,7 +35,7 @@ For English-speaking users, this project may not be relevant as it's specificall
 
 ### 使用预编译程序 | Using Pre-compiled Release
 
-1. 从 Release 页面下载最新版本的 Zoffline-CN Tool
+1. 从 Release 页面下载最新版本的 Zoffline-CN-Tool
 2. 解压到任意目录
 3. 以管理员身份运行程序
 
@@ -65,7 +64,7 @@ For English-speaking users, this project may not be relevant as it's specificall
    python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." Zoffline-CN-Tool.py
    ```
 
-注意：无论使用哪种方式，都需要管理员权限来运行程序。
+注意：无论使用哪种方式，都需要管理员权限来运行程序。【为什么？因为我们需要修改系统hosts文件，需要管理员权限】
 
 ## 使用指南
 
@@ -103,7 +102,7 @@ For English-speaking users, this project may not be relevant as it's specificall
    - Default hosts file       - secure.zwift.com
    - Zwift SSL certificates   - cdn.zwift.com
                               - launcher.zwift.com
-   Ports: 80(HTTP), 443(HTTPS), 3025(TCP),3024(UDP)(Game)
+   Ports: 80(HTTP), 443(HTTPS), 3025(TCP)(Game),3024(UDP)(Game)
 ```
 • 社区服连接:
 ```
@@ -130,15 +129,13 @@ For English-speaking users, this project may not be relevant as it's specificall
 
 ## 注意事项
 
-- 使用社区服务器功能需要先获取有效的服务器 IP 地址
-- 切换服务器时建议先关闭正在运行的 Zwift
-- 需要管理员权限
+- 使用社区服务器功能需要先获得有效的Zoffline社区服务器 IP 地址
 
 ## 致谢项
 
 - Python 3 (https://www.python.org/downloads/)
 - FreeSimpleGUI (https://github.com/spyoungtech/FreeSimpleGui)
-- Caddy (https://caddyserver.com/download)
+- Caddy (https://github.com/caddyserver/caddy)
 
 - Zwift Offline (https://github.com/zoffline/zwift-offline)
 - Zoffline-helper (https://github.com/oldnapalm/zoffline-helper)
