@@ -3,3 +3,7 @@
 /caddy.exe
 /*.ico
 /mixed*
+remote_server_ip.txt
+caddy.log
+zwift_location.txt
+certificates.conf

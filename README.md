@@ -94,6 +94,16 @@ For English-speaking users, this project may not be relevant as it's specificall
 - 测试连通性
 - 版本检查
 
+## 注意事项
+
+- 使用社区服务器功能需要先获取有效的Zoffline社区服务器 IP 地址
+- 使用社区服务器功能需要先获取由Zoffline社区服务器提供的证书和密钥文件
+
+## TODO list
+- 添加DNS解析的功能，实现服务端动态IP绑定的域名也能成功连接
+- 添加服务端证书配置教程或者脚本
+- 添加英文支持
+
 ## 工作原理
 • 官服 Zwift 连接:
 ```
@@ -126,10 +136,6 @@ For English-speaking users, this project may not be relevant as it's specificall
       Client --> Local Caddy --> Remote Server
       [80/443/3025/3024] --> [Proxy] --> [Remote Port]
 ```
-
-## 注意事项
-
-- 使用社区服务器功能需要先获得有效的Zoffline社区服务器 IP 地址
 
 ## 致谢项
 

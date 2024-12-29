@@ -62,22 +62,22 @@ def create_main_window():
     # 高级选项布局
     advanced_layout = [
         [sg.Frame('高级选项', [
-            [sg.Button("导入Host设置", size=(15, 1)),
-             sg.Button("自动导入系统证书", size=(15, 1))],
-            [sg.Button("自动导入客户端证书", size=(15, 1)),
-             sg.Button("启动Caddy后台", size=(15, 1))],
-            [sg.Button("查询官服版本", size=(15, 1)),
-             sg.Button("查询社区服版本", size=(15, 1))],
-            [sg.Button("查询内置版本库", size=(15, 1)),
-             sg.Button("强制\"更新\"版本", size=(15, 1))],
-            [sg.Button("检查系统代理", size=(15, 1)),
-             sg.Button("检查端口占用", size=(15, 1))],
-            [sg.Button("强行终止端口占用", size=(15, 1)),
-             sg.Button("远程端口测试", size=(15, 1))],
-            [sg.Button("本地host和caddy测试", size=(15, 1)),
-             sg.Button("社区服HTTPS测试", size=(15, 1))],
-            [sg.Button("一键测试连通性", size=(15, 1)),
-             sg.Button("TODO", size=(15, 1))]
+            [sg.Button("手动选择证书", size=(15, 1)),
+            sg.Button("导入Host设置", size=(15, 1))],
+            [sg.Button("自动导入系统证书", size=(15, 1)),
+            sg.Button("自动导入客户端证书", size=(15, 1))],
+            [sg.Button("启动Caddy后台", size=(15, 1)),
+            sg.Button("查询官服版本", size=(15, 1))],
+            [sg.Button("查询社区服版本", size=(15, 1)),
+            sg.Button("查询内置版本库", size=(15, 1))],
+            [sg.Button("强制\"更新\"版本", size=(15, 1)),
+            sg.Button("检查系统代理", size=(15, 1))],
+            [sg.Button("检查端口占用", size=(15, 1)),
+            sg.Button("强行终止端口占用", size=(15, 1))],
+            [sg.Button("远程端口测试", size=(15, 1)),
+            sg.Button("本地host和caddy测试", size=(15, 1))],
+            [sg.Button("社区服HTTPS测试", size=(15, 1)),
+            sg.Button("一键测试连通性", size=(15, 1))]
         ], pad=(10, 5))]
     ]
     
@@ -225,38 +225,37 @@ def import_certificates():
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         # 检查证书文件是否存在
-        mixed_cert = os.path.join(current_dir, "mixed-key-zwift-com.p12")
+        # mixed_cert = os.path.join(current_dir, "mixed-key-zwift-com.p12")
         domain_cert = os.path.join(current_dir, "cert-zwift-com.p12")
         
-        if not os.path.exists(mixed_cert):
-            print("[错误] 找不到证书文件 mixed-key-zwift-com.p12")
-            return False
+        # if not os.path.exists(mixed_cert):
+        #     print("[错误] 找不到证书文件 mixed-key-zwift-com.p12")
+        #     return False
             
         if not os.path.exists(domain_cert):
             print("[错误] 找不到证书文件 cert-zwift-com.p12")
             return False
-
-        # 检查Mixed证书
+        
         process = subprocess.run(
             ['certutil.exe', '-store', 'Root'],
             capture_output=True,
             text=True
         )
         
-        # 检查并导入Mixed证书
-        if "73e89c29c209595132ef0d402687a87be5137756" not in process.stdout:
-            print("正在导入Mixed证书...")
-            result = subprocess.run(
-                ['certutil.exe', '-importpfx', 'Root', mixed_cert],
-                input='\n',  # 自动确认导入
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"[错误] Mixed证书导入失败: {result.stderr}")
-                return False
-        else:
-            print("Mixed证书已存在，无需导入")
+        # # 检查并导入Mixed证书
+        # if "73e89c29c209595132ef0d402687a87be5137756" not in process.stdout:
+        #     print("正在导入Mixed证书...")
+        #     result = subprocess.run(
+        #         ['certutil.exe', '-importpfx', 'Root', mixed_cert],
+        #         input='\n',  # 自动确认导入
+        #         capture_output=True,
+        #         text=True
+        #     )
+        #     if result.returncode != 0:
+        #         print(f"[错误] Mixed证书导入失败: {result.stderr}")
+        #         return False
+        # else:
+        #     print("Mixed证书已存在，无需导入")
 
         # 检查并导入Domain证书
         if "54f7f293407370a07679885767e5bd599458e471" not in process.stdout:
@@ -291,12 +290,12 @@ def import_client_certificates(zwift_folder):
             return False
             
         # 检查证书文件
-        mixed_cert_pem = os.path.join(current_dir, "mixed-cert-zwift-com.pem")
+        # mixed_cert_pem = os.path.join(current_dir, "mixed-cert-zwift-com.pem")
         domain_cert_pem = os.path.join(current_dir, "cert-zwift-com.pem")
         
-        if not os.path.exists(mixed_cert_pem):
-            print("[错误] 未找到mixed-cert-zwift-com.pem文件")
-            return False
+        # if not os.path.exists(mixed_cert_pem):
+        #     print("[错误] 未找到mixed-cert-zwift-com.pem文件")
+        #     return False
             
         if not os.path.exists(domain_cert_pem):
             print("[错误] 未找到cert-zwift-com.pem文件")
@@ -306,16 +305,16 @@ def import_client_certificates(zwift_folder):
         with open(cacert_path, 'r') as f:
             current_content = f.read()
 
-        # 检查并添加Mixed证书
-        mixed_cert_signature = "MIID8TCCAtmgAwIBAgIUc+icKcIJWVEy7w1AJoeoe+UTd1YwDQYJKoZIhvcNAQEL"
-        if mixed_cert_signature not in current_content:
-            print("正在添加Mixed证书到cacert.pem...")
-            with open(mixed_cert_pem, 'r') as f:
-                mixed_cert_content = f.read()
-            with open(cacert_path, 'a') as f:
-                f.write('\n' + mixed_cert_content)
-        else:
-            print("Mixed证书已存在于cacert.pem中")
+        # # 检查并添加Mixed证书
+        # mixed_cert_signature = "MIID8TCCAtmgAwIBAgIUc+icKcIJWVEy7w1AJoeoe+UTd1YwDQYJKoZIhvcNAQEL"
+        # if mixed_cert_signature not in current_content:
+        #     print("正在添加Mixed证书到cacert.pem...")
+        #     with open(mixed_cert_pem, 'r') as f:
+        #         mixed_cert_content = f.read()
+        #     with open(cacert_path, 'a') as f:
+        #         f.write('\n' + mixed_cert_content)
+        # else:
+        #     print("Mixed证书已存在于cacert.pem中")
 
         # 检查并添加Domain证书
         domain_cert_signature = "MIIEQTCCAymgAwIBAgIUVPfyk0BzcKB2eYhXZ+W9WZRY5HEwDQYJKoZIhvcNAQEL"
@@ -397,21 +396,109 @@ def kill_processes():
         print(f"终止进程时出错: {str(e)}")
         return False
 
+def select_certificates():
+    """手动选择证书文件"""
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        root = tk.Tk()
+        root.withdraw()  # 隐藏主窗口
+        
+        # 定义需要的证书文件
+        cert_files = {
+            "mixed-cert-zwift-com.pem": "由服务器提供的证书",
+            "mixed-key-zwift-com.pem": "由服务器提供的密钥"
+        }
+        
+        # 保存选择的文件路径
+        config = {}
+        
+        print("请依次选择以下证书文件（Cert和Key）:")
+        for file_name, desc in cert_files.items():
+            print(f"\n正在选择{desc} ({file_name})")
+            file_path = filedialog.askopenfilename(
+                title=f"选择{desc}文件",
+                filetypes=[("PEM Files", "*.pem"), ("All Files", "*.*")],
+                initialdir=os.path.expanduser("~")
+            )
+            
+            if not file_path:
+                print(f"[错误] 未选择{desc}文件")
+                return False
+            
+            # 简单验证文件
+            try:
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                    # 检查是否包含PEM文件的基本特征
+                    if "BEGIN" not in content or "END" not in content:
+                        print(f"[错误] {file_path}文件格式不正确")
+                        return False
+                    # 根据文件类型进行特定验证
+                    if "CERTIFICATE" in file_name.upper():
+                        if "BEGIN CERTIFICATE" not in content:
+                            print(f"[错误] {file_path}不是有效的证书文件")
+                            return False
+                    elif "KEY" in file_name.upper():
+                        if "BEGIN PRIVATE KEY" not in content:
+                            print(f"[错误] {file_path}不是有效的密钥文件")
+                            return False
+                
+                # 保存文件路径到配置
+                config[file_name] = file_path
+                print(f"[成功] {file_path}文件基本格式验证通过")
+                
+            except Exception as e:
+                print(f"[错误] 验证{file_path}文件失败: {str(e)}")
+                return False
+        
+        # 保存配置到文件
+        try:
+            with open(os.path.join(current_dir, "certificates.conf"), 'w') as f:
+                for name, path in config.items():
+                    f.write(f"{name}={path}\n")
+            print("\n证书配置已保存!")
+        except Exception as e:
+            print(f"[错误] 保存证书配置失败: {str(e)}")
+            return False
+            
+        return True
+        
+    except Exception as e:
+        print(f"[错误] 选择证书时出现异常: {str(e)}")
+        return False
+
 def run_caddy_server():
     """启动Caddy服务器"""
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
-        # 检查必需的证书文件
+        # 定义需要的证书文件
         cert_files = {
-            "mixed-cert-zwift-com.pem": "Mixed证书",
-            "mixed-key-zwift-com.pem": "Mixed密钥"
+            "mixed-cert-zwift-com.pem": "由服务器提供的证书",
+            "mixed-key-zwift-com.pem": "由服务器提供的密钥"
         }
         
-        for file, name in cert_files.items():
-            if not os.path.exists(os.path.join(current_dir, file)):
-                print(f"[错误] 未找到{name}文件: {file}")
-                return False
+        # 检查证书配置文件
+        config_file = os.path.join(current_dir, "certificates.conf")
+        if os.path.exists(config_file):
+            # 从配置文件读取证书路径
+            cert_paths = {}
+            with open(config_file, 'r') as f:
+                for line in f:
+                    name, path = line.strip().split('=', 1)
+                    cert_paths[name] = path
+            
+            # 验证配置文件中的路径
+            for file_name, desc in cert_files.items():
+                if file_name not in cert_paths or not os.path.exists(cert_paths[file_name]):
+                    print(f"[错误] 未找到{desc}文件: {cert_paths.get(file_name, '路径未配置')}")
+                    return False
+        else:
+            # 检查本地证书文件
+            for file_name, desc in cert_files.items():
+                if not os.path.exists(os.path.join(current_dir, file_name)):
+                    print(f"[错误] 未找到{desc}文件: {file_name}")
+                    return False
         
         # 检查Caddy进程是否已在运行
         processes = check_processes()
@@ -1359,7 +1446,6 @@ def main():
             kill_processes()
             break
             
-        # 使用正确的 key 清除输出区域
         window['-OUTPUT-'].update('')
         
         # 处理按钮事件
@@ -1423,7 +1509,7 @@ def main():
                 print(f"已保存服务器IP: {ip}")
             else:
                 print("请输入有效的IP地址")
-                
+        
         elif event == "导入Host设置":
             modify_hosts_file()
         
@@ -1480,7 +1566,10 @@ def main():
             
         elif event == "社区服HTTPS测试":
             test_https_connectivity()
-    
+            
+        elif event == "手动选择证书":
+            select_certificates()
+                
     window.close()
 
 if __name__ == "__main__":
