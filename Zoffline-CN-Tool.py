@@ -182,6 +182,24 @@ def modify_hosts_file():
         # hosts文件路径
         hosts_path = r"C:\Windows\System32\drivers\etc\hosts"
         
+        # 检测文件编码
+        encodings = ['ascii', 'gbk', 'gb2312', 'utf-8', 'utf-16', ]
+        file_encoding = None
+        
+        for encoding in encodings:
+            try:
+                with open(hosts_path, 'r', encoding=encoding) as file:
+                    file.read()
+                file_encoding = encoding
+                print(f"检测到hosts文件编码: {encoding}")
+                break
+            except UnicodeDecodeError:
+                continue
+                
+        if not file_encoding:
+            print("[错误] 无法检测hosts文件编码")
+            return False
+        
         # 备份hosts文件
         backup_path = hosts_path + '.bak'
         shutil.copy2(hosts_path, backup_path)
@@ -196,7 +214,7 @@ def modify_hosts_file():
         ]
 
         # 读取当前hosts文件内容
-        with open(hosts_path, 'r') as file:
+        with open(hosts_path, 'r', encoding=file_encoding) as file:
             lines = file.readlines()
 
         # 移除已存在的Zwift相关条目
@@ -206,7 +224,7 @@ def modify_hosts_file():
         filtered_lines.extend([domain + '\n' for domain in domains])
 
         # 写入更新后的内容
-        with open(hosts_path, 'w') as file:
+        with open(hosts_path, 'w', encoding=file_encoding) as file:
             file.writelines(filtered_lines)
 
         print("成功添加Zwift服务器解析到hosts文件")
@@ -520,7 +538,7 @@ def run_caddy_server():
         # 检查caddy可执行文件
         caddy_exe = os.path.join(current_dir, "caddy.exe")
         if not os.path.exists(caddy_exe):
-            print(f"[错误] 未找到Caddy可执行文件: {caddy_exe}")
+            print(f"[错误] 未找到Caddy可执行文件: {caddy_exe}\n如果你是从源码运行的，请手动下载 Caddy (https://caddyserver.com/download) 并重命名为 Caddy.exe，放置在项目根目录")
             return False
 
         # 设置环境变量
