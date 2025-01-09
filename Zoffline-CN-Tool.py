@@ -105,7 +105,7 @@ def find_zwift_location():
         # 首先检查zwift_location.txt
         location_file = "zwift_location.txt"
         if os.path.exists(location_file):
-            with open(location_file, 'r') as f:
+            with open(location_file, 'r', encoding='utf-8') as f:
                 saved_path = f.read().strip().strip('"')
                 if os.path.exists(os.path.join(saved_path, "ZwiftApp.exe")):
                     print(f"从配置文件找到Zwift安装位置: {saved_path}")
@@ -143,7 +143,7 @@ def find_zwift_location():
             if os.path.exists(zwift_exe):
                 print(f"自动找到Zwift安装位置: {location}")
                 # 保存找到的位置
-                with open(location_file, 'w') as f:
+                with open(location_file, 'w', encoding='utf-8') as f:
                     f.write(f'"{location}"')
                 return location
 
@@ -162,7 +162,7 @@ def find_zwift_location():
             if os.path.exists(os.path.join(folder_path, "ZwiftApp.exe")):
                 print(f"已选择Zwift安装位置: {folder_path}")
                 # 保存用户选择的位置
-                with open(location_file, 'w') as f:
+                with open(location_file, 'w', encoding='utf-8') as f:
                     f.write(f'"{folder_path}"')
                 return folder_path
             else:
@@ -320,7 +320,7 @@ def import_client_certificates(zwift_folder):
             return False
 
         # 读取现有的cacert.pem内容
-        with open(cacert_path, 'r') as f:
+        with open(cacert_path, 'r', encoding='utf-8') as f:
             current_content = f.read()
 
         # # 检查并添加Mixed证书
@@ -338,15 +338,15 @@ def import_client_certificates(zwift_folder):
         domain_cert_signature = "MIIEQTCCAymgAwIBAgIUVPfyk0BzcKB2eYhXZ+W9WZRY5HEwDQYJKoZIhvcNAQEL"
         if domain_cert_signature not in current_content:
             print("正在添加Domain证书到cacert.pem...")
-            with open(domain_cert_pem, 'r') as f:
+            with open(domain_cert_pem, 'r', encoding='utf-8') as f:
                 domain_cert_content = f.read()
-            with open(cacert_path, 'a') as f:
+            with open(cacert_path, 'a', encoding='utf-8') as f:
                 f.write('\n' + domain_cert_content)
         else:
             print("Domain证书已存在于cacert.pem中")
 
         # 保存Zwift安装位置
-        with open("zwift_location.txt", 'w') as f:
+        with open("zwift_location.txt", 'w', encoding='utf-8') as f:
             f.write(f'"{zwift_folder}"')
 
         print("客户端证书导入完成")
@@ -445,7 +445,7 @@ def select_certificates():
             
             # 简单验证文件
             try:
-                with open(file_path, 'r') as f:
+                with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
                     # 检查是否包含PEM文件的基本特征
                     if "BEGIN" not in content or "END" not in content:
@@ -471,7 +471,7 @@ def select_certificates():
         
         # 保存配置到文件
         try:
-            with open(os.path.join(current_dir, "certificates.conf"), 'w') as f:
+            with open(os.path.join(current_dir, "certificates.conf"), 'w', encoding='utf-8') as f:
                 for name, path in config.items():
                     f.write(f"{name}={path}\n")
             print("\n证书配置已保存!")
@@ -501,7 +501,7 @@ def run_caddy_server():
         if os.path.exists(config_file):
             # 从配置文件读取证书路径
             cert_paths = {}
-            with open(config_file, 'r') as f:
+            with open(config_file, 'r', encoding='utf-8') as f:
                 for line in f:
                     name, path = line.strip().split('=', 1)
                     cert_paths[name] = path
@@ -527,7 +527,7 @@ def run_caddy_server():
         # 检查或获取服务器IP
         ip_file = "remote_server_ip.txt"
         if os.path.exists(ip_file):
-            with open(ip_file, 'r') as f:
+            with open(ip_file, 'r', encoding='utf-8') as f:
                 server_ip = f.read().strip()
         else:
             print("[错误] 未设置服务器IP地址")
@@ -726,14 +726,14 @@ def cleanup_system():
         hosts_path = r"C:\Windows\System32\drivers\etc\hosts"
         try:
             # 读取当前hosts文件内容
-            with open(hosts_path, 'r') as file:
+            with open(hosts_path, 'r', encoding='utf-8') as file:
                 lines = file.readlines()
 
             # 过滤掉所有zwift.com相关的条目
             filtered_lines = [line for line in lines if 'zwift.com' not in line.lower()]
 
             # 写入更新后的内容
-            with open(hosts_path, 'w') as file:
+            with open(hosts_path, 'w', encoding='utf-8') as file:
                 file.writelines(filtered_lines)
             print("已清理hosts文件中的Zwift相关条目")
         except Exception as e:
@@ -780,7 +780,7 @@ def check_zwift_version():
             return False
             
         # 读取Zwift安装路径
-        with open("zwift_location.txt", 'r') as f:
+        with open("zwift_location.txt", 'r', encoding='utf-8') as f:
             zwift_path = f.read().strip().strip('"')
             
         # 检查本地版本文件
@@ -967,7 +967,7 @@ def check_remote_server_status():
     try:
         # 读取服务器IP
         try:
-            with open("remote_server_ip.txt", 'r') as f:
+            with open("remote_server_ip.txt", 'r', encoding='utf-8') as f:
                 server_ip = f.read().strip()
         except FileNotFoundError:
             return False
@@ -988,7 +988,7 @@ def test_direct_remote():
     try:
         # 读取服务器IP
         try:
-            with open("remote_server_ip.txt", 'r') as f:
+            with open("remote_server_ip.txt", 'r', encoding='utf-8') as f:
                 server_ip = f.read().strip()
         except FileNotFoundError:
             print("[错误] 未找到remote_server_ip.txt文件，请先设置服务器IP")
@@ -1062,7 +1062,7 @@ def test_local_connectivity():
         # 1. 检查hosts文件配置
         print("1. 检查hosts文件解析:")
         hosts_path = r"C:\Windows\System32\drivers\etc\hosts"
-        with open(hosts_path, 'r') as f:
+        with open(hosts_path, 'r', encoding='utf-8') as f:
             hosts_content = f.read().lower()
             
         hosts_ok = True
@@ -1126,7 +1126,7 @@ def test_https_connectivity():
         warnings.filterwarnings('ignore', category=InsecureRequestWarning)
         
         try:
-            with open("remote_server_ip.txt", 'r') as f:
+            with open("remote_server_ip.txt", 'r', encoding='utf-8') as f:
                 server_ip = f.read().strip()
         except FileNotFoundError:
             print("[错误] 未找到remote_server_ip.txt文件，请先设置服务器IP")
@@ -1522,7 +1522,7 @@ def main():
         elif event == "保存IP":
             ip = values['-SERVER-IP-'].strip()
             if ip:
-                with open("remote_server_ip.txt", 'w') as f:
+                with open("remote_server_ip.txt", 'w', encoding='utf-8') as f:
                     f.write(ip)
                 print(f"已保存服务器IP: {ip}")
             else:
