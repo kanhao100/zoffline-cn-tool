@@ -782,11 +782,14 @@ def check_zwift_version():
         # 读取Zwift安装路径
         with open("zwift_location.txt", 'r', encoding='utf-8') as f:
             zwift_path = f.read().strip().strip('"')
+        
+        with open(os.path.join(zwift_path, "Zwift_ver_cur_filename.txt"), 'r', encoding='utf-8') as f:
+            local_version_file_name = f.read().strip().strip('"').rstrip('\x00')
             
         # 检查本地版本文件
-        local_version_file = os.path.join(zwift_path, "Zwift_ver_cur.xml")
+        local_version_file = os.path.join(zwift_path, local_version_file_name)
         if not os.path.exists(local_version_file):
-            print("[错误] 未找到本地版本文件，请先运行初始化设置")
+            print("[错误] 未找到本地版本文件")
             return False
             
         # 读取本地版本
@@ -852,7 +855,7 @@ def check_official_version():
     if check_zwift_version():
         pass
     else:
-        print("[提示] 版本错误, 准备更新")
+        print("[提示] 版本错误")
         return False
 
 def check_community_version():
@@ -903,7 +906,7 @@ def check_community_version():
     if check_zwift_version():
         pass
     else:
-        print("[错误] 版本错误, 请尝试更新")
+        print("[错误] 版本错误")
         return False
     
     return True
@@ -940,7 +943,10 @@ def check_local_versions():
         print("\n本地版本库文件列表:")
         print("-" * 30)
         for folder in sorted(version_folders):
-            ver_file = os.path.join(versions_dir, folder, "Zwift_ver_cur.xml")
+            with open(os.path.join(versions_dir, folder, "Zwift_ver_cur_filename.txt"), 'r', encoding='utf-8') as f:
+                local_version_file_name = f.read().strip().strip('"').rstrip('\x00')
+                
+            ver_file = os.path.join(versions_dir, folder, local_version_file_name)
             if os.path.exists(ver_file):
                 try:
                     tree = ET.parse(ver_file)
@@ -1240,7 +1246,12 @@ def force_update_version():
         # 准备版本列表数据
         version_list = []
         for folder in sorted(version_folders):
-            ver_file = os.path.join(versions_dir, folder, "Zwift_ver_cur.xml")
+            
+            with open(os.path.join(versions_dir, folder, "Zwift_ver_cur_filename.txt"), 'r', encoding='utf-8') as f:
+                local_version_file_name = f.read().strip().strip('"').rstrip('\x00')
+                
+            ver_file = os.path.join(versions_dir, folder, local_version_file_name)
+            
             if os.path.exists(ver_file):
                 try:
                     tree = ET.parse(ver_file)
@@ -1284,6 +1295,7 @@ def force_update_version():
         # 需要复制的文件列表
         files_to_copy = [
             "Zwift_ver_cur.xml",
+            "Zwift_ver_cur.*.xml",
             "Zwift_ver_cur_filename.txt",
             "Zwift_1.0.*_manifest.xml",
             "Zwift_0.0.0_manifest.xml"
@@ -1295,7 +1307,7 @@ def force_update_version():
             source_dir = os.path.join(versions_dir, selected_folder)
             matching_files = []
             for file in os.listdir(source_dir):
-                if file_pattern == file or (file_pattern.endswith('*_manifest.xml') and '_manifest.xml' in file):
+                if file_pattern == file or (file_pattern.endswith('*_manifest.xml') and '_manifest.xml' in file) or (file_pattern.endswith('*.xml') and 'Zwift_ver_cur' in file):
                     matching_files.append(file)
             
             # 复制找到的每个文件
