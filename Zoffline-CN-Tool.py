@@ -471,7 +471,7 @@ def select_certificates():
         
         # 保存配置到文件
         try:
-            with open(os.path.join(current_dir, "certificates.conf"), 'w', encoding='utf-8') as f:
+            with open("certificates.conf", 'w', encoding='utf-8') as f:
                 for name, path in config.items():
                     f.write(f"{name}={path}\n")
             print("\n证书配置已保存!")
@@ -497,7 +497,7 @@ def run_caddy_server():
         }
         
         # 检查证书配置文件
-        config_file = os.path.join(current_dir, "certificates.conf")
+        config_file = "certificates.conf"
         if os.path.exists(config_file):
             # 从配置文件读取证书路径
             cert_paths = {}
