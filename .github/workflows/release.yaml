@@ -1,0 +1,59 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'  # Trigger on any tag
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install UPX
+        uses: engineerd/configurator@v0.0.10
+        with:
+          name: "upx.exe"
+          url: "https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip"
+          pathInArchive: "upx-4.2.2-win64/upx.exe"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller Zoffline-CN-Tool.spec  # Replace with your .spec file
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: dist/*
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref }}  # Use the current tag as the version
+          release_name: Release ${{ github.ref }}  # Release name
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/Zoffline-CN-Tool.exe  # Replace with your executable file path
+          asset_name: Zoffline-CN-Tool.exe  # Name displayed in GitHub Releases
+          asset_content_type: application/octet-stream
