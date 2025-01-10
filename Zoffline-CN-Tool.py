@@ -1501,148 +1501,157 @@ def main():
     
     # 事件循环
     while True:
-        event, values = window.read()
-        
-        # 每2秒更新一次进程状态
-        current_time = time.time()
-        if current_time - last_check_time >= 2:
+        try:
+            event, values = window.read(timeout=2000)  # 设置超时为2秒
+            
+            # 处理窗口关闭事件
+            if event in (sg.WIN_CLOSED, "退出"):
+                kill_processes()
+                break
+                
+            # 更新进程状态
             processes = check_processes()
-            if processes:
+            if processes and window:  # 确保窗口仍然存在
                 window['-LAUNCHER-STATUS-'].update("●", text_color='green' if processes['ZwiftLauncher'] else 'red')
                 window['-APP-STATUS-'].update("●", text_color='green' if processes['ZwiftApp'] else 'red')
                 window['-CADDY-STATUS-'].update("●", text_color='green' if processes['caddy'] else 'red')
                 window['-ZOFFLINE-STATUS-'].update("●", text_color='green' if processes['zoffline_local'] else 'red')
-            last_check_time = current_time
-        if event in (sg.WIN_CLOSED, "退出"):
-            kill_processes()
-            break
             
-        window['-OUTPUT-'].update('')
-        
-        # 处理按钮事件
-        if event == "重置网络属性":
-            print("执行重置网络属性操作...")
+            if event is None:  # 超时事件
+                continue
+                
+            # 处理按钮事件时才清空输出
+            if event != sg.TIMEOUT_EVENT:
+                window['-OUTPUT-'].update('')  # 只在有实际事件发生时清空输出
+            
+            # 处理按钮事件
+            if event == "重置网络属性":
+                print("执行重置网络属性操作...")
 
-        elif event == "返回官服":
-            check_official_version()
-            print("现在你可以自行启动官方了")
-            
-        elif event == "查询客户版本":
-            check_zwift_version()
-            print("执行查询客户版本操作...")
-            
-        elif event == "初始化设置":
-            print("执行初始化设置操作...")
-            zwift_path = find_zwift_location()
-            if zwift_path:
-                if modify_hosts_file() and import_certificates() and import_client_certificates(zwift_path):
-                    print("\n所有设置都已完成")
+            elif event == "返回官服":
+                check_official_version()
+                print("现在你可以自行启动官方了")
+                
+            elif event == "查询客户版本":
+                check_zwift_version()
+                print("执行查询客户版本操作...")
+                
+            elif event == "初始化设置":
+                print("执行初始化设置操作...")
+                zwift_path = find_zwift_location()
+                if zwift_path:
+                    if modify_hosts_file() and import_certificates() and import_client_certificates(zwift_path):
+                        print("\n所有设置都已完成")
+                    else:
+                        print("\n部分设置失败，请检查错误信息")
                 else:
-                    print("\n部分设置失败，请检查错误信息")
-            else:
-                print("Zwift安装位置未找到")
+                    print("Zwift安装位置未找到")
 
             
-        elif event == "一键启动社区服Zwift":
-            launch_community_zwift()
-        
-        elif event == "更新下载资源文件":
-            update_download_files()
+            elif event == "一键启动社区服Zwift":
+                launch_community_zwift()
             
-        elif event == "一键启动官服Zwift":
-            launch_official_zwift()
-            
+            elif event == "更新下载资源文件":
+                update_download_files()
+                
+            elif event == "一键启动官服Zwift":
+                launch_official_zwift()
+                
 
-        elif event == "一键测试连通性":
-            test_community_connectivity()
+            elif event == "一键测试连通性":
+                test_community_connectivity()
 
             
-        elif event == "终止所有进程":
-            if kill_processes():
+            elif event == "终止所有进程":
+                if kill_processes():
+                    if cleanup_system():
+                        print("已终止所有相关进程并清理网络配置")
+                    else:
+                        print("网络配置清理失败")
+                else:
+                    print("终止进程时出现错误")
+                    
+            elif event == "清理网络配置":
                 if cleanup_system():
-                    print("已终止所有相关进程并清理网络配置")
+                    print("网络配置清理完成")
                 else:
                     print("网络配置清理失败")
-            else:
-                print("终止进程时出现错误")
-                
-        elif event == "清理网络配置":
-            if cleanup_system():
-                print("网络配置清理完成")
-            else:
-                print("网络配置清理失败")
-                
-        elif event == "保存IP":
-            ip = values['-SERVER-IP-'].strip()
-            if ip:
-                with open("remote_server_ip.txt", 'w', encoding='utf-8') as f:
-                    f.write(ip)
-                print(f"已保存服务器IP: {ip}")
-            else:
-                print("请输入有效的IP地址")
-        
-        elif event == "导入Host设置":
-            modify_hosts_file()
-        
-        elif event == "自动导入系统证书":
-            import_certificates()
-        
-        elif event == "自动导入客户端证书":
-            zwift_path = find_zwift_location()
-            if zwift_path:
-                import_client_certificates(zwift_path)
-            else:
-                print("Zwift安装位置未找到")
-        
-        elif event == "启动Caddy后台":
-            if run_caddy_server():
-                print("Caddy服务器启动成功")
-            else:
-                print("Caddy服务器启动失败")
-                
-        elif event == "查询内置版本库":
-            check_local_versions()
+                    
+            elif event == "保存IP":
+                ip = values['-SERVER-IP-'].strip()
+                if ip:
+                    with open("remote_server_ip.txt", 'w', encoding='utf-8') as f:
+                        f.write(ip)
+                    print(f"已保存服务器IP: {ip}")
+                else:
+                    print("请输入有效的IP地址")
             
-        elif event == "强制\"更新\"版本":
-            force_update_version()
+            elif event == "导入Host设置":
+                modify_hosts_file()
             
-        elif event == "检查系统代理":
-            check_system_proxy()
+            elif event == "自动导入系统证书":
+                import_certificates()
+            
+            elif event == "自动导入客户端证书":
+                zwift_path = find_zwift_location()
+                if zwift_path:
+                    import_client_certificates(zwift_path)
+                else:
+                    print("Zwift安装位置未找到")
+            
+            elif event == "启动Caddy后台":
+                if run_caddy_server():
+                    print("Caddy服务器启动成功")
+                else:
+                    print("Caddy服务器启动失败")
+                    
+            elif event == "查询内置版本库":
+                check_local_versions()
+                
+            elif event == "强制\"更新\"版本":
+                force_update_version()
+                
+            elif event == "检查系统代理":
+                check_system_proxy()
 
             
-        elif event == "检查端口占用":
-            check_ports()
-            
-        elif event == "强行终止端口占用":
-            if sg.popup_yes_no("警告", 
-                            "这是一个危险操作，请先用检查端口仔细检查目前占用端口的进程有无重要进程。\n确定要继续吗？",
-                            title="确认操作",
-                            button_color=("white", "red")) == "Yes":
-                kill_port_processes()
-            else:
-                print("操作已取消")
+            elif event == "检查端口占用":
+                check_ports()
                 
-        elif event == "查询官服版本":
-            #check_official_version()
-            print("查询官服版本暂时失效，请不要使用")
+            elif event == "强行终止端口占用":
+                if sg.popup_yes_no("警告", 
+                                "这是一个危险操作，请先用检查端口仔细检查目前占用端口的进程有无重要进程。\n确定要继续吗？",
+                                title="确认操作",
+                                button_color=("white", "red")) == "Yes":
+                    kill_port_processes()
+                else:
+                    print("操作已取消")
+                    
+            elif event == "查询官服版本":
+                #check_official_version()
+                print("查询官服版本暂时失效，请不要使用")
 
-        
-        elif event == "查询社区服版本":
-            check_community_version()
+            
+            elif event == "查询社区服版本":
+                check_community_version()
 
-        elif event == "远程端口测试":
-            test_direct_remote()
-            
-        elif event == "本地host和caddy测试":
-            test_local_connectivity()
-            
-        elif event == "社区服HTTPS测试":
-            test_https_connectivity()
-            
-        elif event == "手动选择证书":
-            select_certificates()
+            elif event == "远程端口测试":
+                test_direct_remote()
                 
-    window.close()
+            elif event == "本地host和caddy测试":
+                test_local_connectivity()
+                
+            elif event == "社区服HTTPS测试":
+                test_https_connectivity()
+                
+            elif event == "手动选择证书":
+                select_certificates()
+                
+        except Exception as e:
+            break  # 发生异常时直接退出循环
+    
+    if window:
+        window.close()
 
 if __name__ == "__main__":
     main()
