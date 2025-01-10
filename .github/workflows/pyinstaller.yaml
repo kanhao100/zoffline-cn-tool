@@ -3,7 +3,7 @@ name: pyinstaller
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -22,6 +22,17 @@ jobs:
         name: "upx.exe"
         url: "https://github.com/upx/upx/releases/download/v4.2.2/upx-4.2.2-win64.zip"
         pathInArchive: "upx-4.2.2-win64/upx.exe"
+
+    - name: Download and extract caddy.exe
+      run: |
+        curl -L -o caddy.zip https://github.com/caddyserver/caddy/releases/download/v2.9.1/caddy_2.9.1_windows_amd64.zip
+        powershell -Command "Expand-Archive -Path caddy.zip -DestinationPath . -Force"
+        if (Test-Path -Path ".\caddy.exe") {
+            Write-Host "caddy.exe Downloaded"
+        } else {
+            Write-Host "[Error] caddy.exe Not Found"
+            exit 1
+        }
 
     - run: pip install -r requirements.txt
     - run: pip install pyinstaller
