@@ -68,3 +68,5 @@ jobs:
           asset_path: dist/Zoffline-CN-Tool.exe  # Replace with your executable file path
           asset_name: Zoffline-CN-Tool.exe  # Name displayed in GitHub Releases
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
