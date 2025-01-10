@@ -12,7 +12,6 @@
 :443 {
     # Frontend - Local Client
     tls cert-zwift-com.pem key-zwift-com.pem
-    # tls mixed-cert-zwift-com.pem mixed-key-zwift-com.pem
     
     @all_hosts host cdn.zwift.com secure.zwift.com launcher.zwift.com us-or-rly101.zwift.com
     handle @all_hosts {
@@ -24,7 +23,6 @@
                 tls_server_name {$ZWIFT_SERVER}
                 # Backend - Remote Server
                 tls_client_auth mixed-cert-zwift-com.pem mixed-key-zwift-com.pem
-                # tls_client_auth cert-zwift-com.pem key-zwift-com.pem
             }
         }
     }

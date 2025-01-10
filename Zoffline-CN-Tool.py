@@ -511,12 +511,21 @@ def run_caddy_server():
                 if file_name not in cert_paths or not os.path.exists(cert_paths[file_name]):
                     print(f"[错误] 未找到{desc}文件: {cert_paths.get(file_name, '路径未配置')}")
                     return False
+                else:
+                    # 复制证书文件到当前工作目录
+                    destination_path = os.path.join(current_dir, file_name)
+                    if not os.path.exists(destination_path):
+                        shutil.copy(cert_paths[file_name], destination_path)
+                        print(f"[成功] 复制 {desc} 文件到当前工作目录: {destination_path}")
+
         else:
             # 检查本地证书文件
             for file_name, desc in cert_files.items():
                 if not os.path.exists(os.path.join(current_dir, file_name)):
                     print(f"[错误] 未找到{desc}文件: {file_name}")
                     return False
+        
+        
         
         # 检查Caddy进程是否已在运行
         processes = check_processes()
@@ -1427,17 +1436,49 @@ def update_download_files():
 def launch_community_zwift():
     """一键启动社区服"""
     try:
-
         if not check_community_version():
             return False
         
         zwift_path = find_zwift_location()
+    
+        # # 新增逻辑: 查找所有 Zwift_ver_cur.xxxxxx.xml 文件
+        # version_files = []
+        # for file in os.listdir(zwift_path):
+        #     if file.startswith("Zwift_ver_cur.") and file.endswith(".xml"):
+        #         parts = file.split(".")
+        #         print(parts)
+        #         if len(parts) == 3 and parts[1].isdigit():
+        #             version_number = int(parts[1])
+        #             print(version_number)
+        #             version_files.append((file, version_number))
+        
+        # if not version_files:
+        #     print("[错误] 未找到任何 Zwift_ver_cur.xxxxxx.xml 文件，如果你的版本是1.80.0，请先更新，换用新的逻辑")
+        #     return False
+        
+        # # 选择最高版本号的文件
+        # version_files.sort(key=lambda x: x[1], reverse=True)
+        # selected_file, selected_version = version_files[0]
+        # print(f"选择的版本文件: {selected_file} (版本号: {selected_version})")
+        
+        # # 复制选择的文件为 Zwift_ver_cur.xml
+        # source_xml = os.path.join(zwift_path, selected_file)
+        # target_xml = os.path.join(zwift_path, "Zwift_ver_cur.xml")
+        # shutil.copy2(source_xml, target_xml)
+        # print(f"已复制 {selected_file} 为 Zwift_ver_cur.xml")
+        
+        # # 更新 Zwift_ver_cur_filename.txt
+        # version_file_path = os.path.join(zwift_path, "Zwift_ver_cur_filename.txt")
+        # with open(version_file_path, 'w', encoding='utf-8') as f:
+        #     # f.write(f'{selected_file}')
+        #     f.write('Zwift_ver_cur.xml')
+        # print(f"已更新 Zwift_ver_cur_filename.txt 为: {selected_file}")
+        
+        # 启动ZwiftLauncher
         launcher_path = os.path.join(zwift_path, "ZwiftLauncher.exe")
         if not os.path.exists(launcher_path):
             print("[错误] 未找到ZwiftLauncher.exe")
             return False
-    
-        # 启动ZwiftLauncher
         print("正在启动ZwiftLauncher...")
         subprocess.Popen(launcher_path)
         print("[成功] ZwiftLauncher已启动")
@@ -1582,7 +1623,8 @@ def main():
                 print("操作已取消")
                 
         elif event == "查询官服版本":
-            check_official_version()
+            #check_official_version()
+            print("查询官服版本暂时失效，请不要使用")
 
         
         elif event == "查询社区服版本":
