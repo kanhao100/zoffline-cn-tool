@@ -8,11 +8,18 @@ import subprocess
 import tkinter as tk
 from tkinter import filedialog
 import time
+import platform
+import math
+import signal
+import threading
 
-import requests
 import xml.etree.ElementTree as ET
+from urllib3 import PoolManager
+from binascii import crc32
+import requests
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def is_admin():
     """检查是否具有管理员权限"""
@@ -55,7 +62,7 @@ def create_main_window():
         [sg.Frame('主要功能', [
             [sg.Button("一键启动社区服Zwift", size=(24, 5), button_color=('white', '#FF6347'))],
             [sg.Button("一键启动官服Zwift", size=(24, 2))],
-            [sg.Button("更新下载资源文件", size=(24, 2))]
+            [sg.Button("更新下载资源文件(手动)", size=(24, 2))]
         ], pad=(10, 5))]
     ]
     
@@ -847,7 +854,7 @@ def check_zwift_version():
             print("[警告] 本地版本低于服务器版本, 请点击从资源文件更新")
             return False
         elif local_version > server_version:
-            print("[错误] 本地版本高于服务器版本，请联系服务器管理员更新")
+            print("[错误] 本地版本高于服务器版本，请联系服务器管理员更新，或记下服务器版本号，然后点击更新下载资源文件，将下载匹配的版本")
             return False
         else:
             print("[成功] 版本匹配！一切正常")
@@ -1405,33 +1412,179 @@ def launch_official_zwift():
         return False
 
 def update_download_files():
-    """更新下载资源文件"""
+    """更新下载资源文件(手动)"""
     try:
         # 查找Zwift安装路径
         zwift_path = find_zwift_location()
         if zwift_path:
-            check_official_version()
+            check_community_version()
         else:
             print("Zwift安装位置未找到")
-            
-        launcher_path = os.path.join(zwift_path, "ZwiftLauncher.exe")
-        if not os.path.exists(launcher_path):
-            print("[错误] 未找到ZwiftLauncher.exe")
             return False
-            
-        # 终止现有进程
-        kill_processes()
         
-        # 启动ZwiftLauncher
-        subprocess.Popen(launcher_path)
-        print("请耐心等待下面的更新进度条走完！！！然后再重新启动")
-        print("请耐心等待下面的更新进度条走完！！！然后再重新启动")
-        print("请耐心等待下面的更新进度条走完！！！然后再重新启动")
+        cleanup_system()
+
+        # 弹出输入窗口
+        version_layout = [
+            [sg.Text("请输入版本号 (例如: 138816):")],
+            [sg.Input(key='-VERSION-')],
+            [sg.Button('确定'), sg.Button('取消')]
+        ]
+        version_window = sg.Window('输入版本号', version_layout)
+        
+        while True:
+            event, values = version_window.read()
+            if event in (None, '取消'):
+                version_window.close()
+                return False
+            if event == '确定':
+                version = values['-VERSION-'].strip()
+                if version:
+                    version_window.close()
+                    # 创建下载进度窗口
+                    progress_layout = [
+                        [sg.Text('正在下载资源文件...(99%请耐心等待)')],
+                        [sg.ProgressBar(100, orientation='h', size=(20, 20), key='-PROGRESS-')],
+                        [sg.Text('', key='-STATUS-')],
+                        [sg.Button('取消下载')]
+                    ]
+                    progress_window = sg.Window('下载进度', progress_layout, finalize=True)
+                    
+                    # 创建一个事件来控制下载线程
+                    cancel_event = threading.Event()
+                    
+                    # 创建下载线程
+                    download_thread = threading.Thread(
+                        target=download_zwift_version,
+                        args=(zwift_path, version, progress_window, cancel_event)
+                    )
+                    download_thread.start()
+                    
+                    # 监听进度窗口事件
+                    while True:
+                        event, _ = progress_window.read(timeout=100)
+                        if event in (None, '取消下载'):
+                            cancel_event.set()  # 通知下载线程取消
+                            print("正在取消下载...")
+                            download_thread.join()  # 等待下载线程结束
+                            break
+                        
+                        # 如果下载线程已结束，关闭窗口
+                        if not download_thread.is_alive():
+                            break
+                    
+                    progress_window.close()
+                    break
+                else:
+                    sg.popup_error('请输入有效的版本号')
+
         return True
         
     except Exception as e:
-        print(f"[错误] 启动Zwift时出现异常: {str(e)}")
+        print(f"[错误] 更新资源文件时出现异常: {str(e)}")
         return False
+
+def download_zwift_version(local_path, version, progress_window=None, cancel_event=None):
+    """下载指定版本的Zwift资源文件"""
+    try:
+        system = platform.system()
+        if system == 'Windows':
+            file = f'Zwift_ver_cur.{version}.xml'
+        elif system == 'Darwin':
+            file = f'ZwiftMac_ver_cur.{version}.xml'
+        else:
+            print("Unsupported platform: %s" % system)
+            return
+
+        base_url = 'http://cdn.zwift.com/gameassets/Zwift_Updates_Root/'
+
+        # 下载版本文件
+        response = PoolManager().request('GET', base_url + file)
+        with open(os.path.join(local_path, file), 'wb') as f:
+            f.write(response.data)
+
+        # 解析版本文件获取manifest
+        tree = ET.parse(os.path.join(local_path, file))
+        root = tree.getroot()
+        manifest = root.get('manifest')
+        manifest_checksum = int(root.get('manifest_checksum')) % (1 << 32)
+        manifest_file = os.path.join(local_path, manifest)
+
+        # 下载manifest文件
+        while not os.path.isfile(manifest_file) or crc32(open(manifest_file, 'rb').read()) != manifest_checksum:
+            response = PoolManager().request('GET', base_url + manifest)
+            with open(manifest_file, 'wb') as f:
+                f.write(response.data)
+
+        # 解析manifest获取文件列表
+        tree = ET.parse(manifest_file)
+        root = tree.getroot()
+        folder = root.get('folder')
+        all_files = list(root.iter('file'))
+        total = len(all_files)
+        downloaded = 0
+
+        print(f"开始下载 {manifest} 中的文件")
+        
+        # 创建下载线程池
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = []
+            
+            # 提交所有下载任务
+            for file_info in all_files:
+                if cancel_event and cancel_event.is_set():
+                    print("\n下载已取消")
+                    return
+                    
+                path = file_info.find('path').text
+                length = int(file_info.find('length').text)
+                checksum = int(file_info.find('checksum').text) % (1 << 32)
+                
+                future = executor.submit(
+                    download_single_file,
+                    base_url, folder, path, length, checksum, local_path
+                )
+                futures.append(future)
+            
+            # 更新进度
+            for future in as_completed(futures):
+                if cancel_event and cancel_event.is_set():
+                    executor.shutdown(wait=False)
+                    print("\n下载已取消")
+                    return
+                    
+                downloaded += 1
+                progress = (downloaded * 100) // total
+                
+                if progress_window:
+                    progress_window['-PROGRESS-'].update(progress)
+                    progress_window['-STATUS-'].update(f'进度: {progress}% ({downloaded}/{total})')
+                else:
+                    print(f'\r进度: {progress}% ({downloaded}/{total})', end='', flush=True)
+        
+        # 更新版本文件名
+        with open(os.path.join(local_path, 'Zwift_ver_cur_filename.txt'), 'w') as f:
+            f.write(file)
+
+        print("\n下载完成!")
+
+    except Exception as e:
+        print(f"\n[错误] 下载过程中出现异常: {str(e)}")
+
+def download_single_file(base_url, folder, path, length, checksum, local_path):
+    """下载单个文件"""
+    file_name = os.path.join(local_path, path.replace('\\', os.sep))
+    dir_name = os.path.dirname(file_name)
+    
+    # 创建目录
+    if not os.path.isdir(dir_name):
+        os.makedirs(dir_name, exist_ok=True)
+    
+    # 下载文件直到校验和匹配
+    while not os.path.isfile(file_name) or os.path.getsize(file_name) != length or (crc32(open(file_name, 'rb').read()) != checksum and checksum != 4294967295):
+        response = PoolManager().request('GET', f'{base_url}{folder}/{path.replace("\\", "/")}')
+        with open(file_name, 'wb') as f:
+            f.write(response.data)
 
 def launch_community_zwift():
     """一键启动社区服"""
@@ -1551,7 +1704,11 @@ def main():
             elif event == "一键启动社区服Zwift":
                 launch_community_zwift()
             
-            elif event == "更新下载资源文件":
+            # elif event == "更新下载资源文件(自动)":
+            #     # update_download_files_auto()
+            #     print("自动更新下载资源文件暂时失效，请不要使用")
+
+            elif event == "更新下载资源文件(手动)":
                 update_download_files()
                 
             elif event == "一键启动官服Zwift":
@@ -1628,8 +1785,9 @@ def main():
                     print("操作已取消")
                     
             elif event == "查询官服版本":
-                #check_official_version()
-                print("查询官服版本暂时失效，请不要使用")
+                check_official_version()
+                print("查询官方版本有概率失效，主要是官服的接口有可能忘记更新，请查阅")
+                # print("查询官服版本暂时失效，请不要使用")
 
             
             elif event == "查询社区服版本":

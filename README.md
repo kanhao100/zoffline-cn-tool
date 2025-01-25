@@ -88,8 +88,9 @@ For English-speaking users, this project may not be relevant as it's specificall
 1. 首次运行时，程序会自动请求管理员权限
 2. 程序会自动查找 Zwift 安装位置，如果找不到会提示手动选择
 3. 设置社区服务器 IP 地址
-4. 手动选择证书和密钥文件（由社区服务器提供）
-
+4. 点击高级选项的，"手动选择证书"，依次选择证书和密钥文件（由社区服务器提供）
+5. 如果和服务端的版本不匹配，点击"更新下载资源文件（手动）"，输入版本号，然后点击确定，程序会自动下载匹配的版本，请耐心等待最后99%的时候下载最后几个文件，只能单线程了，可能会比较慢，请耐心等待。
+   
 ### 切换服务器 | Switch Server
 
 #### 切换到社区服务器 | Switch to Community Server
@@ -148,9 +149,9 @@ For English-speaking users, this project may not be relevant as it's specificall
 - Python 3 (https://www.python.org/downloads/)
 - FreeSimpleGUI (https://github.com/spyoungtech/FreeSimpleGui)
 - Caddy (https://github.com/caddyserver/caddy)
-
-- Zwift Offline (https://github.com/zoffline/zwift-offline)
+- Zwift-Offline (https://github.com/zoffline/zwift-offline)
 - Zoffline-helper (https://github.com/oldnapalm/zoffline-helper)
+- oldnapalm/update_zwift.py (https://gist.github.com/oldnapalm/556c58448a6ee09438b39e1c1c9ce3d0)
 
 ## 免责声明
 
