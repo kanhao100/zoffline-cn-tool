@@ -5,7 +5,7 @@ a = Analysis(
     ['Zoffline-CN-Tool.py'],
     pathex=[],
     binaries=[],
-    datas=[('*.pem', '.'), ('*.p12', '.'), ('caddy.exe', '.'), ('Caddyfile', '.')],
+    datas=[('*.pem', '.'), ('*.p12', '.'), ('caddy.exe', '.'), ('Caddyfile', '.'), ('SEU.ico', '.'), ('NUCU.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

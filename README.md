@@ -76,7 +76,7 @@ For English-speaking users, this project may not be relevant as it's specificall
 
 5. 编译打包分发
    ```bash
-   python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." Zoffline-CN-Tool.py
+   python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." --add-data "SEU.ico;." --add-data "NUCU.ico;." Zoffline-CN-Tool.py
    ```
 
 注意：无论使用哪种方式，都需要管理员权限来运行程序。【为什么？因为我们需要修改系统hosts文件，需要管理员权限】
