@@ -1,7 +1,6 @@
 /build
 /dist
 /caddy.exe
-/seu.ico
 /mixed*
 remote_server_ip.txt
 caddy.log
