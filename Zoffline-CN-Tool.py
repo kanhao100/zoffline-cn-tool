@@ -12,7 +12,6 @@ import platform
 import math
 import signal
 import threading
-
 import xml.etree.ElementTree as ET
 from urllib3 import PoolManager
 from binascii import crc32
@@ -20,6 +19,10 @@ import requests
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from language_manager import LanguageManager
+
+# 创建语言管理器实例
+lang_mgr = LanguageManager()
 
 def is_admin():
     """检查是否具有管理员权限"""
@@ -38,69 +41,93 @@ def create_main_window():
     
     # 添加菜单栏
     menu_def = [
-        ['文件(&F)', ['保存配置', '重新加载配置', '---', '退出']],
-        ['工具(&T)', ['检查系统代理', '检查端口占用', '强行终止端口占用', '---', '清理网络配置', '终止所有进程']],
-        ['版本(&V)', ['查询官服版本', '查询社区服版本', '查询内置版本库']],
-        ['测试(&D)', ['远程端口测试', '本地host和caddy测试', 'HTTPS测试', '一键测试连通性']],
-        ['帮助(&H)', ['使用说明', '关于']]
+        [lang_mgr.get_text('menu_file'), [lang_mgr.get_text('menu_save_config'), 
+                                         lang_mgr.get_text('menu_reload_config'), 
+                                         '---', 
+                                         lang_mgr.get_text('menu_exit')]],
+        [lang_mgr.get_text('menu_tools'), [lang_mgr.get_text('check_proxy'), 
+                                          lang_mgr.get_text('check_ports'), 
+                                          lang_mgr.get_text('kill_ports'), 
+                                          '---', 
+                                          lang_mgr.get_text('clean_network'), 
+                                          lang_mgr.get_text('kill_all')]],
+        [lang_mgr.get_text('menu_version'), [lang_mgr.get_text('check_official_ver'), 
+                                            lang_mgr.get_text('check_community_ver'), 
+                                            lang_mgr.get_text('check_local_ver')]],
+        [lang_mgr.get_text('menu_test'), [lang_mgr.get_text('test_remote'), 
+                                         lang_mgr.get_text('test_local'), 
+                                         lang_mgr.get_text('test_https'), 
+                                         lang_mgr.get_text('test_connectivity')]],
+        [lang_mgr.get_text('menu_help'), [lang_mgr.get_text('menu_usage'), 
+                                         lang_mgr.get_text('menu_about')]]
     ]
     
     # 状态面板布局
     status_layout = [
-        [sg.Text("进程状态:", font=("Helvetica", 12))],
-        [sg.Text("ZwiftLauncher:", size=(12,1)), 
-        sg.Text("●", text_color='red', key='-LAUNCHER-STATUS-')],
-        [sg.Text("ZwiftApp:", size=(12,1)), 
-        sg.Text("●", text_color='red', key='-APP-STATUS-')],
-        [sg.Text("Caddy:", size=(12,1)), 
-        sg.Text("●", text_color='red', key='-CADDY-STATUS-')],
-        [sg.Text("Zoffline_local:", size=(12,1)), 
-        sg.Text("●", text_color='red', key='-ZOFFLINE-STATUS-')]
+        [sg.Text(lang_mgr.get_text('process_status'), font=("Helvetica", 12))],
+        [sg.Text(lang_mgr.get_text('launcher_status'), size=(12,1)), 
+         sg.Text("●", text_color='red', key='-LAUNCHER-STATUS-')],
+        [sg.Text(lang_mgr.get_text('app_status'), size=(12,1)), 
+         sg.Text("●", text_color='red', key='-APP-STATUS-')],
+        [sg.Text(lang_mgr.get_text('caddy_status'), size=(12,1)), 
+         sg.Text("●", text_color='red', key='-CADDY-STATUS-')],
+        [sg.Text(lang_mgr.get_text('zoffline_status'), size=(12,1)), 
+         sg.Text("●", text_color='red', key='-ZOFFLINE-STATUS-')]
     ]
     
     # 服务器设置布局
     server_layout = [
-        [sg.Text("服务器设置:", font=("Helvetica", 12))],
-        [sg.Text("IP:", size=(2,1)), 
-        sg.Input(key='-SERVER-IP-', size=(15,1)), 
-        sg.Button("保存IP")]
+        [sg.Text(lang_mgr.get_text('server_settings'), font=("Helvetica", 12))],
+        [sg.Text(lang_mgr.get_text('ip_label'), size=(2,1)), 
+         sg.Input(key='-SERVER-IP-', size=(15,1)), 
+         sg.Button(lang_mgr.get_text('save_ip'))]
     ]
     
     # 主要按钮布局
     main_layout = [
-        [sg.Frame('主要功能', [
-            [sg.Button("一键启动社区服Zwift", size=(24, 5), button_color=('white', '#FF6347'))],
-            [sg.Button("一键启动官服Zwift", size=(24, 2))],
-            [sg.Button("更新下载资源文件(手动)", size=(24, 2))]
+        [sg.Frame(lang_mgr.get_text('main_functions'), [
+            [sg.Button(lang_mgr.get_text('launch_community'), size=(24, 5), button_color=('white', '#FF6347'))],
+            [sg.Button(lang_mgr.get_text('launch_official'), size=(24, 2))],
+            [sg.Button(lang_mgr.get_text('update_resources'), size=(24, 2))]
         ], pad=(10, 5))]
     ]
     
     # 高级选项布局
     advanced_layout = [
-        [sg.Frame('高级选项', [
-            [sg.Button("手动选择证书", size=(15, 1)),
-            sg.Button("导入Host设置", size=(15, 1))],
-            [sg.Button("自动导入系统证书", size=(15, 1)),
-            sg.Button("自动导入客户端证书", size=(15, 1))],
-            [sg.Button("启动Caddy后台", size=(15, 1)),
-            sg.Button("查询官服版本", size=(15, 1))],
-            [sg.Button("查询社区服版本", size=(15, 1)),
-            sg.Button("查询内置版本库", size=(15, 1))],
-            [sg.Button("强制\"更新\"版本", size=(15, 1)),
-            sg.Button("检查系统代理", size=(15, 1))],
-            [sg.Button("检查端口占用", size=(15, 1)),
-            sg.Button("强行终止端口占用", size=(15, 1))],
-            [sg.Button("远程端口测试", size=(15, 1)),
-            sg.Button("本地host和caddy测试", size=(15, 1))],
-            [sg.Button("社区服HTTPS测试", size=(15, 1)),
-            sg.Button("一键测试连通性", size=(15, 1))]
+        [sg.Frame(lang_mgr.get_text('advanced_options'), [
+            [sg.Button(lang_mgr.get_text('select_cert'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('import_host'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('import_sys_cert'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('import_client_cert'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('start_caddy'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('check_official_ver'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('check_community_ver'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('check_local_ver'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('force_update'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('check_proxy'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('check_ports'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('kill_ports'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('test_remote'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('test_local'), size=(15, 1))],
+            [sg.Button(lang_mgr.get_text('test_https'), size=(15, 1)),
+             sg.Button(lang_mgr.get_text('test_connectivity'), size=(15, 1))]
         ], pad=(10, 5))]
+    ]
+    
+    # 语言选择下拉菜单
+    language_layout = [
+        [sg.Text("Language/语言:"),
+         sg.Combo(lang_mgr.get_available_languages(), 
+                 default_value=lang_mgr.current_language,
+                 key='-LANGUAGE-',
+                 enable_events=True)]
     ]
     
     # 完整布局，添加菜单栏
     layout = [
         [sg.Menu(menu_def)],  # 添加菜单栏
-        [sg.Text("Zoffline-CN-Tool", font=("Helvetica", 20), justification='center', pad=(0, 10))],
+        [sg.Text(lang_mgr.get_text('window_title'), font=("Helvetica", 20), justification='center', pad=(0, 10))],
+        language_layout,
         [sg.Column(status_layout, vertical_alignment='top'),
          sg.VerticalSeparator(pad=(10,0)),
          sg.Column(server_layout + main_layout, vertical_alignment='top'),
@@ -108,13 +135,13 @@ def create_main_window():
          sg.Column(advanced_layout, vertical_alignment='top')],
         [sg.Output(size=(80, 10), pad=(10, 5), key='-OUTPUT-')],
         [
-            sg.Button("退出", size=(15, 1)),
-            sg.Button("终止所有进程", size=(15, 1)),
-            sg.Button("清除网络配置", size=(15, 1))
+            sg.Button(lang_mgr.get_text('exit'), size=(15, 1)),
+            sg.Button(lang_mgr.get_text('kill_all'), size=(15, 1)),
+            sg.Button(lang_mgr.get_text('clean_network'), size=(15, 1))
         ],
     ]
     
-    return sg.Window("Zoffline-CN-Tool", layout, finalize=True)
+    return sg.Window(lang_mgr.get_text('window_title'), layout, finalize=True)
 
 def find_zwift_location():
     """查找Zwift安装位置"""
@@ -1669,10 +1696,18 @@ def main():
             event, values = window.read(timeout=2000)  # 设置超时为2秒
             
             # 处理窗口关闭事件
-            if event in (None, '退出', '文件(&F)退出'):
+            if event in (None, lang_mgr.get_text('exit'), f"{lang_mgr.get_text('menu_file')}退出"):
                 window_active = False  # 设置标志表示窗口即将关闭
                 kill_processes()
                 break
+                
+            # 处理语言切换
+            if event == '-LANGUAGE-':
+                if values['-LANGUAGE-'] != lang_mgr.current_language:
+                    lang_mgr.set_language(values['-LANGUAGE-'])
+                    window.close()
+                    window = create_main_window()
+                    continue
                 
             # 只在窗口活动时更新进程状态
             if window_active:
@@ -1695,101 +1730,50 @@ def main():
                 window['-OUTPUT-'].update('')  # 只在有实际事件发生时清空输出
             
             # 处理按钮事件
-            if event == "重置网络属性":
-                print("执行重置网络属性操作...")
-
-            elif event == "返回官服":
-                check_official_version()
-                print("现在你可以自行启动官方了")
-                
-            elif event == "查询客户版本":
-                check_zwift_version()
-                print("执行查询客户版本操作...")
-                
-            elif event == "初始化设置":
-                print("执行初始化设置操作...")
-                zwift_path = find_zwift_location()
-                if zwift_path:
-                    if modify_hosts_file() and import_certificates() and import_client_certificates(zwift_path):
-                        print("\n所有设置都已完成")
-                    else:
-                        print("\n部分设置失败，请检查错误信息")
-                else:
-                    print("Zwift安装位置未找到")
-
-            
-            elif event == "一键启动社区服Zwift":
+            if event == lang_mgr.get_text('launch_community'):
                 launch_community_zwift()
             
-            # elif event == "更新下载资源文件(自动)":
-            #     # update_download_files_auto()
-            #     print("自动更新下载资源文件暂时失效，请不要使用")
-
-            elif event == "更新下载资源文件(手动)":
-                update_download_files()
-                
-            elif event == "一键启动官服Zwift":
+            elif event == lang_mgr.get_text('launch_official'):
                 launch_official_zwift()
                 
-
-            elif event == "一键测试连通性":
-                test_community_connectivity()
-
-            
-            elif event == "终止所有进程":
-                if kill_processes():
-                    if cleanup_system():
-                        print("已终止所有相关进程并清理网络配置")
-                    else:
-                        print("网络配置清理失败")
-                else:
-                    print("终止进程时出现错误")
-                    
-            elif event == "清理网络配置":
-                cleanup_system()
+            elif event == lang_mgr.get_text('update_resources'):
+                update_download_files()
                 
-            elif event == "保存IP":
-                ip = values['-SERVER-IP-'].strip()
-                if ip:
-                    with open("remote_server_ip.txt", 'w', encoding='utf-8') as f:
-                        f.write(ip)
-                    print(f"已保存服务器IP: {ip}")
-                else:
-                    print("请输入有效的IP地址")
+            elif event == lang_mgr.get_text('select_cert'):
+                select_certificates()
             
-            elif event == "导入Host设置":
+            elif event == lang_mgr.get_text('import_host'):
                 modify_hosts_file()
             
-            elif event == "自动导入系统证书":
+            elif event == lang_mgr.get_text('import_sys_cert'):
                 import_certificates()
             
-            elif event == "自动导入客户端证书":
+            elif event == lang_mgr.get_text('import_client_cert'):
                 zwift_path = find_zwift_location()
                 if zwift_path:
                     import_client_certificates(zwift_path)
                 else:
                     print("Zwift安装位置未找到")
             
-            elif event == "启动Caddy后台":
+            elif event == lang_mgr.get_text('start_caddy'):
                 if run_caddy_server():
                     print("Caddy服务器启动成功")
                 else:
                     print("Caddy服务器启动失败")
                     
-            elif event == "查询内置版本库":
+            elif event == lang_mgr.get_text('check_local_ver'):
                 check_local_versions()
                 
-            elif event == "强制\"更新\"版本":
+            elif event == lang_mgr.get_text('force_update'):
                 force_update_version()
-                
-            elif event == "检查系统代理":
-                check_system_proxy()
-
             
-            elif event == "检查端口占用":
+            elif event == lang_mgr.get_text('check_proxy'):
+                check_system_proxy()
+            
+            elif event == lang_mgr.get_text('check_ports'):
                 check_ports()
                 
-            elif event == "强行终止端口占用":
+            elif event == lang_mgr.get_text('kill_ports'):
                 if sg.popup_yes_no("警告", 
                                 "这是一个危险操作，请先用检查端口仔细检查目前占用端口的进程有无重要进程。\n确定要继续吗？",
                                 title="确认操作",
@@ -1798,35 +1782,55 @@ def main():
                 else:
                     print("操作已取消")
                     
-            elif event == "查询官服版本":
+            elif event == lang_mgr.get_text('check_official_ver'):
                 check_official_version()
                 print("查询官方版本有概率失效，主要是官服的接口有可能忘记更新，请查阅")
-                # print("查询官服版本暂时失效，请不要使用")
-
             
-            elif event == "查询社区服版本":
+            elif event == lang_mgr.get_text('check_community_ver'):
                 check_community_version()
 
-            elif event == "远程端口测试":
+            elif event == lang_mgr.get_text('test_remote'):
                 test_direct_remote()
                 
-            elif event == "本地host和caddy测试":
+            elif event == lang_mgr.get_text('test_local'):
                 test_local_connectivity()
                 
-            elif event == "社区服HTTPS测试":
+            elif event == lang_mgr.get_text('test_https'):
                 test_https_connectivity()
                 
-            elif event == "手动选择证书":
-                select_certificates()
+            elif event == lang_mgr.get_text('test_connectivity'):
+                test_community_connectivity()
                 
-            elif event == "使用说明":
-                sg.popup('使用说明', 
+            elif event == lang_mgr.get_text('kill_all'):
+                if kill_processes():
+                    if cleanup_system():
+                        print("已终止所有相关进程并清理网络配置")
+                    else:
+                        print("网络配置清理失败")
+                else:
+                    print("终止进程时出现错误")
+                    
+            elif event == lang_mgr.get_text('clean_network'):
+                cleanup_system()
+                
+            elif event == lang_mgr.get_text('save_ip'):
+                ip = values['-SERVER-IP-'].strip()
+                if ip:
+                    with open("remote_server_ip.txt", 'w', encoding='utf-8') as f:
+                        f.write(ip)
+                    print(f"已保存服务器IP: {ip}")
+                else:
+                    print("请输入有效的IP地址")
+            
+            elif event == lang_mgr.get_text('menu_usage'):
+                sg.popup(lang_mgr.get_text('menu_usage'), 
                          '1. 设置服务器IP\n' + 
                          '2. 导入证书和配置\n' + 
                          '3. 选择启动模式\n' + 
                          '4. 根据需要使用高级功能',
-                         title='使用说明')
-            elif event == "关于":
+                         title=lang_mgr.get_text('menu_usage'))
+                         
+            elif event == lang_mgr.get_text('menu_about'):
                 about_layout = [
                     [sg.Text('Zoffline-CN-Tool', font=('Helvetica', 16), justification='center')],
                     [sg.Text('版本: 1.4.0', justification='center')],
