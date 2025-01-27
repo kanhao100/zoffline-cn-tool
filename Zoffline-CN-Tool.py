@@ -100,7 +100,7 @@ def create_main_window():
     # 完整布局，添加菜单栏
     layout = [
         [sg.Menu(menu_def)],  # 添加菜单栏
-        [sg.Text("Zoffline-CN Tool", font=("Helvetica", 20), justification='center', pad=(0, 10))],
+        [sg.Text("Zoffline-CN-Tool", font=("Helvetica", 20), justification='center', pad=(0, 10))],
         [sg.Column(status_layout, vertical_alignment='top'),
          sg.VerticalSeparator(pad=(10,0)),
          sg.Column(server_layout + main_layout, vertical_alignment='top'),
@@ -114,7 +114,7 @@ def create_main_window():
         ],
     ]
     
-    return sg.Window("Zoffline-CN Tool", layout, finalize=True)
+    return sg.Window("Zoffline-CN-Tool", layout, finalize=True)
 
 def find_zwift_location():
     """查找Zwift安装位置"""
@@ -1661,6 +1661,7 @@ def main():
 
     window = create_main_window()
     last_check_time = 0
+    window_active = True  # 添加一个标志来跟踪窗口状态
     
     # 事件循环
     while True:
@@ -1668,17 +1669,23 @@ def main():
             event, values = window.read(timeout=2000)  # 设置超时为2秒
             
             # 处理窗口关闭事件
-            if event in ('退出', '文件(&F)退出'):
+            if event in (None, '退出', '文件(&F)退出'):
+                window_active = False  # 设置标志表示窗口即将关闭
                 kill_processes()
                 break
                 
-            # 更新进程状态
-            processes = check_processes()
-            if processes and window:  # 确保窗口仍然存在
-                window['-LAUNCHER-STATUS-'].update("●", text_color='green' if processes['ZwiftLauncher'] else 'red')
-                window['-APP-STATUS-'].update("●", text_color='green' if processes['ZwiftApp'] else 'red')
-                window['-CADDY-STATUS-'].update("●", text_color='green' if processes['caddy'] else 'red')
-                window['-ZOFFLINE-STATUS-'].update("●", text_color='green' if processes['zoffline_local'] else 'red')
+            # 只在窗口活动时更新进程状态
+            if window_active:
+                processes = check_processes()
+                if processes and window:  # 确保窗口仍然存在
+                    try:
+                        window['-LAUNCHER-STATUS-'].update("●", text_color='green' if processes['ZwiftLauncher'] else 'red')
+                        window['-APP-STATUS-'].update("●", text_color='green' if processes['ZwiftApp'] else 'red')
+                        window['-CADDY-STATUS-'].update("●", text_color='green' if processes['caddy'] else 'red')
+                        window['-ZOFFLINE-STATUS-'].update("●", text_color='green' if processes['zoffline_local'] else 'red')
+                    except Exception:
+                        # 忽略更新状态时的错误
+                        pass
             
             if event is None:  # 超时事件
                 continue
@@ -1821,12 +1828,14 @@ def main():
                          title='使用说明')
             elif event == "关于":
                 about_layout = [
-                    [sg.Text('Zoffline-CN Tool', font=('Helvetica', 16))],
-                    [sg.Text('版本: 1.0.0')],
-                    [sg.Text('作者: kanhao100')],
-                    [sg.Text('GitHub: '), sg.Text('https://github.com/kanhao100/zoffline-cn-tool', 
-                            text_color='blue', enable_events=True, key='-GITHUB-LINK-')],
-                    [sg.Text('如果这个功能帮助你，请给个star鼓励一下作者')],
+                    [sg.Text('Zoffline-CN-Tool', font=('Helvetica', 16), justification='center')],
+                    [sg.Text('版本: 1.4.0', justification='center')],
+                    [sg.Text('开源地址: '), sg.Text('https://github.com/kanhao100/zoffline-cn-tool', 
+                            text_color='blue', enable_events=True, key='-GITHUB-LINK-', justification='center')],
+                    [sg.Text('请给Star鼓励一下作者', justification='center')],
+                    [sg.Text('版权声明: 本软件完全免费开源，如果你是付费购买的，那么你被骗了，请立即退款', justification='center')],
+                    [sg.Column([[sg.Image('SEU.ico', size=(128,128)), sg.Image('NUCU.ico', size=(128,128))]], 
+                              justification='center')],
                     [sg.Button('确定')]
                 ]
                 
@@ -1843,6 +1852,8 @@ def main():
                 about_window.close()
                 
         except Exception as e:
+            if window_active:  # 只在窗口仍然活动时显示错误
+                print(f"发生错误: {str(e)}")
             break  # 发生异常时直接退出循环
     
     if window:
