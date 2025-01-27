@@ -36,6 +36,15 @@ def create_main_window():
     """创建主窗口"""
     sg.theme('LightGrey1')
     
+    # 添加菜单栏
+    menu_def = [
+        ['文件(&F)', ['保存配置', '重新加载配置', '---', '退出']],
+        ['工具(&T)', ['检查系统代理', '检查端口占用', '强行终止端口占用', '---', '清理网络配置', '终止所有进程']],
+        ['版本(&V)', ['查询官服版本', '查询社区服版本', '查询内置版本库']],
+        ['测试(&D)', ['远程端口测试', '本地host和caddy测试', 'HTTPS测试', '一键测试连通性']],
+        ['帮助(&H)', ['使用说明', '关于']]
+    ]
+    
     # 状态面板布局
     status_layout = [
         [sg.Text("进程状态:", font=("Helvetica", 12))],
@@ -88,8 +97,9 @@ def create_main_window():
         ], pad=(10, 5))]
     ]
     
-    # 完整布局
+    # 完整布局，添加菜单栏
     layout = [
+        [sg.Menu(menu_def)],  # 添加菜单栏
         [sg.Text("Zoffline-CN Tool", font=("Helvetica", 20), justification='center', pad=(0, 10))],
         [sg.Column(status_layout, vertical_alignment='top'),
          sg.VerticalSeparator(pad=(10,0)),
@@ -1658,7 +1668,7 @@ def main():
             event, values = window.read(timeout=2000)  # 设置超时为2秒
             
             # 处理窗口关闭事件
-            if event in (sg.WIN_CLOSED, "退出"):
+            if event in ('退出', '文件(&F)退出'):
                 kill_processes()
                 break
                 
@@ -1729,11 +1739,8 @@ def main():
                     print("终止进程时出现错误")
                     
             elif event == "清理网络配置":
-                if cleanup_system():
-                    print("网络配置清理完成")
-                else:
-                    print("网络配置清理失败")
-                    
+                cleanup_system()
+                
             elif event == "保存IP":
                 ip = values['-SERVER-IP-'].strip()
                 if ip:
@@ -1804,6 +1811,36 @@ def main():
                 
             elif event == "手动选择证书":
                 select_certificates()
+                
+            elif event == "使用说明":
+                sg.popup('使用说明', 
+                         '1. 设置服务器IP\n' + 
+                         '2. 导入证书和配置\n' + 
+                         '3. 选择启动模式\n' + 
+                         '4. 根据需要使用高级功能',
+                         title='使用说明')
+            elif event == "关于":
+                about_layout = [
+                    [sg.Text('Zoffline-CN Tool', font=('Helvetica', 16))],
+                    [sg.Text('版本: 1.0.0')],
+                    [sg.Text('作者: kanhao100')],
+                    [sg.Text('GitHub: '), sg.Text('https://github.com/kanhao100/zoffline-cn-tool', 
+                            text_color='blue', enable_events=True, key='-GITHUB-LINK-')],
+                    [sg.Text('如果这个功能帮助你，请给个star鼓励一下作者')],
+                    [sg.Button('确定')]
+                ]
+                
+                about_window = sg.Window('关于', about_layout, modal=True, finalize=True)
+                
+                while True:
+                    about_event, about_values = about_window.read()
+                    if about_event in (None, '确定'):
+                        break
+                    elif about_event == '-GITHUB-LINK-':
+                        import webbrowser
+                        webbrowser.open('https://github.com/kanhao100/zoffline-cn-tool')
+                
+                about_window.close()
                 
         except Exception as e:
             break  # 发生异常时直接退出循环
