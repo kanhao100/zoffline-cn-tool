@@ -1566,3 +1566,120 @@ def launch_community_zwift():
     except Exception as e:
         print(f"[错误] 启动Zwift时出现异常: {str(e)}")
         return False
+
+def download_local_server():
+    """下载本地服务器"""
+    try:
+        # 下载URL
+        url = "https://github.com/zoffline/zwift-offline/releases/download/zoffline_1.0.138816/zoffline_1.0.138816.exe"
+        filename = "zoffline_local_server.exe"
+        
+        # 创建下载进度窗口
+        progress_layout = [
+            [sg.Text('正在下载本地服务器...')],
+            [sg.ProgressBar(100, orientation='h', size=(20, 20), key='-PROGRESS-')],
+            [sg.Text('', key='-STATUS-')],
+            [sg.Button('取消下载')]
+        ]
+        progress_window = sg.Window('下载进度', progress_layout, finalize=True)
+        
+        # 创建一个事件来控制下载线程
+        cancel_event = threading.Event()
+        
+        def download_with_progress():
+            try:
+                # 使用urllib3下载
+                http = PoolManager()
+                response = http.request('GET', url, preload_content=False)
+                
+                # 获取文件大小
+                file_size = int(response.headers['Content-Length'])
+                downloaded = 0
+                
+                with open(filename, 'wb') as f:
+                    while True:
+                        if cancel_event.is_set():
+                            response.release()
+                            return False
+                            
+                        data = response.read(8192)
+                        if not data:
+                            break
+                            
+                        f.write(data)
+                        downloaded += len(data)
+                        progress = int((downloaded * 100) / file_size)
+                        
+                        progress_window['-PROGRESS-'].update(progress)
+                        progress_window['-STATUS-'].update(f'进度: {progress}% ({downloaded}/{file_size} bytes)')
+                
+                response.release()
+                return True
+                
+            except Exception as e:
+                print(f"[错误] 下载过程中出现异常: {str(e)}")
+                return False
+        
+        # 创建下载线程
+        download_thread = threading.Thread(target=download_with_progress)
+        download_thread.start()
+        
+        # 监听进度窗口事件
+        while True:
+            event, _ = progress_window.read(timeout=100)
+            if event in (None, '取消下载'):
+                cancel_event.set()  # 通知下载线程取消
+                print("正在取消下载...")
+                download_thread.join()  # 等待下载线程结束
+                if os.path.exists(filename):
+                    os.remove(filename)  # 删除未完成的文件
+                break
+            
+            # 如果下载线程已结束，关闭窗口
+            if not download_thread.is_alive():
+                break
+        
+        progress_window.close()
+        
+        if os.path.exists(filename):
+            print(f"[成功] 本地服务器已下载到: {filename}")
+            return True
+        else:
+            print("[错误] 下载失败或已取消")
+            return False
+            
+    except Exception as e:
+        print(f"[错误] 下载本地服务器时出现异常: {str(e)}")
+        return False
+
+def show_copyright_notice():
+    """显示版权声明"""
+    try:
+        # 检查是否已经显示过
+        if os.path.exists("notice_shown.txt"):
+            with open("notice_shown.txt", 'r', encoding='utf-8') as f:
+                if f.read().strip() == "1":
+                    return True
+
+        # 创建版权声明窗口
+        layout = [
+            [sg.Text('版权声明', font=('Helvetica', 16), justification='center')],
+            [sg.Text('本软件完全免费开源，如果你是付费购买的，那么你被骗了，请立即退款。', justification='center')],
+            [sg.Checkbox('不再显示此提示', key='-NO-SHOW-')],
+            [sg.Button('确定')]
+        ]
+
+        window = sg.Window('版权声明', layout, modal=True, element_justification='center')
+        event, values = window.read()
+        window.close()
+
+        # 如果用户选择不再显示
+        if values and values['-NO-SHOW-']:
+            with open("notice_shown.txt", 'w', encoding='utf-8') as f:
+                f.write("1")
+
+        return True
+
+    except Exception as e:
+        print(f"[错误] 显示版权声明时出现异常: {str(e)}")
+        return False

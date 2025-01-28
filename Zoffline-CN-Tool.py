@@ -56,6 +56,8 @@ def create_main_window():
                                           lang_mgr.get_text('import_client_cert'),
                                           lang_mgr.get_text('start_caddy'),
                                           '---',
+                                          lang_mgr.get_text('download_local_server'),
+                                          '---',
                                           lang_mgr.get_text('check_proxy'),
                                           lang_mgr.get_text('check_ports'),
                                           lang_mgr.get_text('kill_ports'),
@@ -186,6 +188,9 @@ def main():
         run_as_admin()
         sys.exit()
 
+    # 显示版权声明
+    show_copyright_notice()
+
     window = create_main_window()
     last_check_time = 0
     window_active = True  # 添加一个标志来跟踪窗口状态
@@ -304,6 +309,9 @@ def main():
                     print("Caddy服务器启动成功")
                 else:
                     print("Caddy服务器启动失败")
+                    
+            elif event == lang_mgr.get_text('download_local_server'):
+                download_local_server()
                     
             elif event == lang_mgr.get_text('check_local_ver'):
                 check_local_versions()
