@@ -43,7 +43,7 @@ jobs:
         run: pip install pyinstaller
 
       - name: Build with PyInstaller
-        run: pyinstaller Zoffline-CN-Tool.spec  # Replace with your .spec file
+        run: pyinstaller Zoffline_CN_Tool.spec
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
