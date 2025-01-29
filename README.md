@@ -35,8 +35,8 @@ For English-speaking users, this project may not be relevant as it's specificall
 ## TODO list
 - [ ] 添加DNS解析的功能，实现服务端动态IP绑定的域名也能成功连接
 - [ ] 添加服务端证书配置教程或者脚本
-- [ ] 添加英文支持
-- [ ] 添加本地Zoffline服务器的启动支持
+- [x] 添加英文支持
+- [x] 添加本地Zoffline服务器的启动支持
 
 
 ## 系统要求 | System Requirements
@@ -71,12 +71,12 @@ For English-speaking users, this project may not be relevant as it's specificall
 
 4. 运行程序:
    ```bash
-   python Zoffline-CN-Tool.py
+   python Zoffline_CN_Tool.py
    ```
 
 5. 编译打包分发
    ```bash
-   python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." --add-data "SEU.ico;." --add-data "NUCU.ico;." Zoffline_CN_Tool.py
+   python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." --add-data "SEU.ico;." --add-data "NUCU.ico;." --name "Zoffline-CN-Tool" Zoffline_CN_Tool.py
    ```
 
 注意：无论使用哪种方式，都需要管理员权限来运行程序。【为什么？因为我们需要修改系统hosts文件，需要管理员权限】

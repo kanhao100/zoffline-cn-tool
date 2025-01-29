@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['Zoffline-CN-Tool.py'],
+    ['Zoffline_CN_Tool.py'],
     pathex=[],
     binaries=[],
     datas=[('*.pem', '.'), ('*.p12', '.'), ('caddy.exe', '.'), ('Caddyfile', '.'), ('SEU.ico', '.'), ('NUCU.ico', '.')],
