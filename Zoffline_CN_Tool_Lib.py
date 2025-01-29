@@ -19,6 +19,7 @@ import requests
 import warnings
 from urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import json
 
 def is_admin():
     """检查是否具有管理员权限"""
@@ -457,8 +458,6 @@ def run_caddy_server():
                     print(f"[错误] 未找到{desc}文件: {file_name}")
                     return False
         
-        
-        
         # 检查Caddy进程是否已在运行
         processes = check_processes()
         if processes and processes['caddy']:
@@ -524,7 +523,7 @@ def check_ports():
             80: "HTTP",
             443: "HTTPS",
             3024: "Zwift Game",
-            3025: "Zwift Launcher"
+            3025: "Zwift Game"
         }
         
         # PowerShell命令检查端口占用
@@ -799,7 +798,7 @@ def check_official_version():
         print("[提示] 版本错误")
         return False
 
-def check_community_version():
+def check_community_version(server_ip):
     """清理网络配置"""
     # 查找Zwift安装路径
     zwift_path = find_zwift_location()
@@ -810,33 +809,36 @@ def check_community_version():
             print("\n部分设置失败，请检查错误信息")
     else:
         print("Zwift安装位置未找到")
+
+
+    if server_ip != "127.0.0.1":
+        print("当前准备运行本地Zoffline服务器，我们不检查端口和代理情况，不启动caddy")
+        # 终止现有进程
+        if kill_processes():
+            print("已终止所有相关进程")
+        else:
+            print("终止进程时出现错误")
         
-    # 终止现有进程
-    if kill_processes():
-        print("已终止所有相关进程")
-    else:
-        print("终止进程时出现错误")
-    
-    occupied_ports = check_ports()
-    if not occupied_ports:
-        pass
-    else:
-        print("端口检查失败，尝试手动关闭占用端口的程序")
-        return False
+        occupied_ports = check_ports()
+        if not occupied_ports:
+            pass
+        else:
+            print("端口检查失败，尝试手动关闭占用端口的程序")
+            return False
+            
+        if check_system_proxy():
+            pass
+        else:
+            print("系统代理检查失败，尝试手动关闭系统代理")
+            return False
         
-    if check_system_proxy():
-        pass
-    else:
-        print("系统代理检查失败，尝试手动关闭系统代理")
-        return False
-    
-    # 启动Caddy服务器
-    if not run_caddy_server():
-        print("[错误] Caddy服务器启动失败")
-        return False
-        
-    # 等待Caddy启动
-    time.sleep(2)
+        # 启动Caddy服务器
+        if not run_caddy_server():
+            print("[错误] Caddy服务器启动失败")
+            return False
+            
+        # 等待Caddy启动
+        time.sleep(2)
     
     if test_community_connectivity():
         pass
@@ -1514,7 +1516,15 @@ def download_single_file(base_url, folder, path, length, checksum, local_path):
 def launch_community_zwift():
     """一键启动社区服"""
     try:
-        if not check_community_version():
+        # 读取服务器IP
+        try:
+            with open("remote_server_ip.txt", 'r', encoding='utf-8') as f:
+                server_ip = f.read().strip()
+        except FileNotFoundError:
+            print("[错误] 未找到remote_server_ip.txt文件，请先设置服务器IP")
+            return False
+
+        if not check_community_version(server_ip):
             return False
         
         zwift_path = find_zwift_location()
@@ -1570,9 +1580,25 @@ def launch_community_zwift():
 def download_local_server():
     """下载本地服务器"""
     try:
-        # 下载URL
-        url = "https://github.com/zoffline/zwift-offline/releases/download/zoffline_1.0.138816/zoffline_1.0.138816.exe"
-        filename = "zoffline_local_server.exe"
+        # 先获取最新版本信息
+        http = PoolManager()
+        try:
+            # 获取最新版本信息
+            latest_release = http.request('GET', 'https://api.github.com/repos/zoffline/zwift-offline/releases/latest')
+            release_info = json.loads(latest_release.data.decode('utf-8'))
+            
+            # 找到exe文件的下载链接和文件名
+            exe_asset = next((asset for asset in release_info['assets'] if asset['name'].endswith('.exe')), None)
+            if not exe_asset:
+                print("[错误] 在最新版本中未找到exe文件")
+                return False
+                
+            url = exe_asset['browser_download_url']
+            filename = exe_asset['name']
+            print(f"找到最新版本: {filename}")
+        except Exception as e:
+            print(f"[错误] 获取最新版本信息失败: {str(e)}")
+            return False
         
         # 创建下载进度窗口
         progress_layout = [
@@ -1589,7 +1615,6 @@ def download_local_server():
         def download_with_progress():
             try:
                 # 使用urllib3下载
-                http = PoolManager()
                 response = http.request('GET', url, preload_content=False)
                 
                 # 获取文件大小
@@ -1599,7 +1624,6 @@ def download_local_server():
                 with open(filename, 'wb') as f:
                     while True:
                         if cancel_event.is_set():
-                            response.release()
                             return False
                             
                         data = response.read(8192)
@@ -1613,12 +1637,16 @@ def download_local_server():
                         progress_window['-PROGRESS-'].update(progress)
                         progress_window['-STATUS-'].update(f'进度: {progress}% ({downloaded}/{file_size} bytes)')
                 
-                response.release()
                 return True
                 
             except Exception as e:
                 print(f"[错误] 下载过程中出现异常: {str(e)}")
                 return False
+            finally:
+                try:
+                    response.close()
+                except:
+                    pass
         
         # 创建下载线程
         download_thread = threading.Thread(target=download_with_progress)
@@ -1664,7 +1692,8 @@ def show_copyright_notice():
         # 创建版权声明窗口
         layout = [
             [sg.Text('版权声明', font=('Helvetica', 16), justification='center')],
-            [sg.Text('本软件完全免费开源，如果你是付费购买的，那么你被骗了，请立即退款。', justification='center')],
+            [sg.Text('本软件完全免费开源，如果你是付费购买的，那么你被骗了，请立即退款并举报。', justification='center')],
+            [sg.Text('严禁任何形式倒卖！', justification='center')],
             [sg.Checkbox('不再显示此提示', key='-NO-SHOW-')],
             [sg.Button('确定')]
         ]
@@ -1682,4 +1711,52 @@ def show_copyright_notice():
 
     except Exception as e:
         print(f"[错误] 显示版权声明时出现异常: {str(e)}")
+        return False
+
+def start_local_server():
+    """启动本地服务器"""
+    try:
+        # 查找当前目录下的所有zoffline exe文件
+        exe_files = [f for f in os.listdir('.') if f.startswith('zoffline') and f.endswith('.exe')]
+        
+        if not exe_files:
+            sg.popup_error('未找到本地服务器文件\n请先下载本地服务器', title='错误')
+            return False
+            
+        # 对版本进行排序，选择最新版本
+        def get_version_number(filename):
+            # 从文件名中提取版本号，格式如：zoffline_1.0.138816.exe
+            try:
+                version = filename.split('_')[1].split('.exe')[0]  # 获取 1.0.138816
+                return tuple(map(int, version.split('.')))  # 转换为数字元组 (1, 0, 138816)
+            except:
+                return (0, 0, 0)  # 如果解析失败，返回最小版本号
+        
+        # 按版本号排序
+        exe_files.sort(key=get_version_number, reverse=True)
+        latest_version = exe_files[0]
+            
+        # 创建选择窗口
+        layout = [
+            [sg.Text('请选择要启动的服务器版本：')],
+            [sg.Combo(exe_files, default_value=latest_version, key='-VERSION-', size=(40, 1))],
+            [sg.Button('启动'), sg.Button('取消')]
+        ]
+        
+        window = sg.Window('选择服务器版本', layout, modal=True)
+        event, values = window.read()
+        window.close()
+        
+        if event == '启动' and values['-VERSION-']:
+            selected_version = values['-VERSION-']
+            # 启动服务器
+            subprocess.Popen([os.path.join(os.getcwd(), selected_version)], 
+                           creationflags=subprocess.CREATE_NEW_CONSOLE)
+            print(f"[成功] 已启动本地服务器: {selected_version}")
+            return True
+            
+        return False
+        
+    except Exception as e:
+        print(f"[错误] 启动本地服务器时出现异常: {str(e)}")
         return False

@@ -55,6 +55,7 @@ LANGUAGES = {
         'server_selected': '已选择服务器: {}',
         'server_select_error': '选择服务器失败',
         'download_local_server': '下载本地服务器',
+        'start_local_server': '启动本地服务器',
         # 菜单项
         'menu_file': '文件(&F)',
         'menu_save_config': '保存配置',
@@ -123,6 +124,7 @@ LANGUAGES = {
         'server_selected': 'Selected Server: {}',
         'server_select_error': 'Failed to Select Server',
         'download_local_server': 'Download Local Server',
+        'start_local_server': 'Start Local Server',
         # Menu items
         'menu_file': 'File(&F)',
         'menu_save_config': 'Save Config',

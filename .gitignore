@@ -2,6 +2,7 @@
 /dist
 /caddy.exe
 /mixed*
+/storage
 remote_server_ip.txt
 caddy.log
 zwift_location.txt

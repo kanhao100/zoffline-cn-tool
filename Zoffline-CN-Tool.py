@@ -57,6 +57,7 @@ def create_main_window():
                                           lang_mgr.get_text('start_caddy'),
                                           '---',
                                           lang_mgr.get_text('download_local_server'),
+                                          lang_mgr.get_text('start_local_server'),
                                           '---',
                                           lang_mgr.get_text('check_proxy'),
                                           lang_mgr.get_text('check_ports'),
@@ -313,6 +314,9 @@ def main():
             elif event == lang_mgr.get_text('download_local_server'):
                 download_local_server()
                     
+            elif event == lang_mgr.get_text('start_local_server'):
+                start_local_server()
+                    
             elif event == lang_mgr.get_text('check_local_ver'):
                 check_local_versions()
                 
@@ -389,7 +393,6 @@ def main():
                     [sg.Text('开源地址: '), sg.Text('https://github.com/kanhao100/zoffline-cn-tool', 
                             text_color='blue', enable_events=True, key='-GITHUB-LINK-', justification='center')],
                     [sg.Text('请给Star鼓励一下作者', justification='center')],
-                    [sg.Text('版权声明: 本软件完全免费开源，如果你是付费购买的，那么你被骗了，请立即退款', justification='center')],
                     [sg.Column([[sg.Image(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SEU.ico'), size=(128,128)), 
                                sg.Image(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'NUCU.ico'), size=(128,128))]], 
                               justification='center')],
@@ -425,9 +428,9 @@ def load_servers():
         else:
             # 读取默认证书和密钥
             try:
-                with open("mixed-cert-zwift-com.pem", 'r', encoding='utf-8') as f:
+                with open("cert-zwift-com.pem", 'r', encoding='utf-8') as f:
                     default_cert = f.read()
-                with open("mixed-key-zwift-com.pem", 'r', encoding='utf-8') as f:
+                with open("key-zwift-com.pem", 'r', encoding='utf-8') as f:
                     default_key = f.read()
             except Exception:
                 default_cert = ""
