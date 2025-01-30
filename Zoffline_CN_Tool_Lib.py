@@ -1341,10 +1341,16 @@ def launch_official_zwift():
 def update_download_files():
     """更新下载资源文件(手动)"""
     try:
+        try:
+            with open("remote_server_ip.txt", 'r', encoding='utf-8') as f:
+                server_ip = f.read().strip()
+        except FileNotFoundError:
+            print("[错误] 未找到remote_server_ip.txt文件，请先设置服务器IP")
+            return False
         # 查找Zwift安装路径
         zwift_path = find_zwift_location()
         if zwift_path:
-            check_community_version()
+            check_community_version(server_ip)
         else:
             print("Zwift安装位置未找到")
             return False

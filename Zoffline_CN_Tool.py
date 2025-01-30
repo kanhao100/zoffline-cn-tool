@@ -84,6 +84,11 @@ def create_main_window():
             sg.Button(lang_mgr.get_text('kill_all'), size=(15, 1)),
             sg.Button(lang_mgr.get_text('clean_network'), size=(15, 1))
         ],
+        [
+            sg.Text('https://github.com/kanhao100/zoffline-cn-tool', text_color='blue', enable_events=True, key='-GITHUB-LINK-'),
+            sg.Push(),
+            sg.Text('东南大学猎风车队|南京高校联队', pad=(10, 5))
+        ]
     ]
     
     return sg.Window(lang_mgr.get_text('window_title'), layout, finalize=True)
@@ -284,6 +289,10 @@ def main():
                 else:
                     print("请输入有效的IP地址")
             
+            elif event == '-GITHUB-LINK-':
+                import webbrowser
+                webbrowser.open('https://github.com/kanhao100/zoffline-cn-tool')
+                
             elif event == lang_mgr.get_text('menu_usage'):
                 sg.popup(lang_mgr.get_text('menu_usage'), 
                          '1. 设置服务器IP\n' + 
