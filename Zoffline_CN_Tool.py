@@ -78,7 +78,7 @@ def create_main_window():
         [sg.Column(status_layout, vertical_alignment='top'),
          sg.VerticalSeparator(pad=(10,0)),
          sg.Column(server_layout + main_layout, vertical_alignment='top')],
-        [sg.Output(size=(80, 10), pad=(10, 5), key='-OUTPUT-')],
+        [sg.Output(size=(65, 7), pad=(10, 5), key='-OUTPUT-')],
         [
             sg.Button(lang_mgr.get_text('exit'), size=(15, 1)),
             sg.Button(lang_mgr.get_text('kill_all'), size=(15, 1)),
@@ -304,7 +304,7 @@ def main():
             elif event == lang_mgr.get_text('menu_about'):
                 about_layout = [
                     [sg.Text('Zoffline-CN-Tool', font=('Helvetica', 16), justification='center')],
-                    [sg.Text('版本: 1.4.0', justification='center')],
+                    [sg.Text('版本: 1.4.2', justification='center')],
                     [sg.Text('开源地址: '), sg.Text('https://github.com/kanhao100/zoffline-cn-tool', 
                             text_color='blue', enable_events=True, key='-GITHUB-LINK-', justification='center')],
                     [sg.Text('请给Star鼓励一下作者', justification='center')],

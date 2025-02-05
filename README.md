@@ -3,16 +3,16 @@
 
 [![pyinstaller](https://github.com/kanhao100/zoffline-cn-tool/actions/workflows/pyinstaller.yaml/badge.svg)](https://github.com/kanhao100/zoffline-cn-tool/actions/workflows/pyinstaller.yaml)
 
-Zoffline-CN-Tool is a GUI tool for switching between Zwift's official servers and community servers.
+Zoffline-CN-Tool is a GUI tool for switching between Zwift's official servers and community servers ([Zwift-Offline](https://github.com/zoffline/zwift-offline)), and it now supports English.
 
 Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 在大陆地区特殊网络环境的相关的配置任务。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
-
-For English-speaking users, this project may not be relevant as it's specifically designed for users in mainland China. If you need English support, please open an issue.
 
 ## 功能特点 | Features
 
 ### 主要功能 | Main Features
 - 一键启动社区服 Zwift
+- 多个远程社区服务器切换管理功能
+- 一键启动本地运行的社区服 Zwift
 - 一键启动官服 Zwift
 - 自动检查社区服版本和本地版本
 
@@ -21,20 +21,21 @@ For English-speaking users, this project may not be relevant as it's specificall
 - 自动系统证书导入
 - 自动客户端证书导入
 - Caddy 反向代理后台单独启动
+- 自动下载[Zwift-Offline](https://github.com/zoffline/zwift-offline)本地服务端后台单独启动
 - 版本查询和管理
 - 系统代理检查
-- 端口占用检查
+- 端口占用检查并终止
 - 连通性测试
 
 
 ## 注意事项 | Attention
 
-- 使用社区服务器功能需要先获取有效的Zoffline社区服务器 IP 地址
-- 使用社区服务器功能需要先获取由Zoffline社区服务器提供的证书和密钥文件
+- 使用社区服务器功能需要先获取有效的Zoffline社区服务器 IP 地址，并获取由Zoffline社区服务器提供的证书和密钥文件。[现已支持使用config文件一键传递]
 
 ## TODO list
 - [ ] 添加DNS解析的功能，实现服务端动态IP绑定的域名也能成功连接
 - [ ] 添加服务端证书配置教程或者脚本
+- [x] 添加多服务器切换管理功能
 - [x] 添加英文支持
 - [x] 添加本地Zoffline服务器的启动支持
 

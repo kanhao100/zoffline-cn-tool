@@ -25,8 +25,8 @@ def create_server_list_window():
                  enable_click_events=True,
                  right_click_menu=['&Right', ['Edit Note', 'Delete']])],
         [sg.Input(key='-NEW-SERVER-IP-', size=(15,1)), 
-         sg.Button(lang_mgr.get_text('add_server'), size=(10,1)),
-         sg.Button(lang_mgr.get_text('test_servers'), size=(15,1))],
+         sg.Button(lang_mgr.get_text('add_server'), size=(10,1))],
+        #  sg.Button(lang_mgr.get_text('test_servers'), size=(15,1))],
         [sg.Button(lang_mgr.get_text('close'), size=(10,1))]
     ]
     

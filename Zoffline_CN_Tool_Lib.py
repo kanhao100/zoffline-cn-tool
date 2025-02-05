@@ -775,7 +775,7 @@ def check_zwift_version():
         print("-" * 20)
         
         if local_version < server_version:
-            print("[警告] 本地版本低于服务器版本, 请点击从资源文件更新")
+            print("[警告] 本地版本低于服务器版本, 请记下服务器版本号，点击更新下载资源文件")
             return False
         elif local_version > server_version:
             print("[错误] 本地版本高于服务器版本，请联系服务器管理员更新，或记下服务器版本号，然后点击更新下载资源文件，将下载匹配的版本")
@@ -812,7 +812,6 @@ def check_community_version(server_ip):
 
 
     if server_ip != "127.0.0.1":
-        print("当前准备运行本地Zoffline服务器，我们不检查端口和代理情况，不启动caddy")
         # 终止现有进程
         if kill_processes():
             print("已终止所有相关进程")
@@ -839,7 +838,11 @@ def check_community_version(server_ip):
             
         # 等待Caddy启动
         time.sleep(2)
-    
+        
+    else:
+        print("当前准备运行本地Zoffline服务器，我们不检查端口和代理情况，不启动caddy")
+
+
     if test_community_connectivity():
         pass
     else:
@@ -1530,44 +1533,21 @@ def launch_community_zwift():
             print("[错误] 未找到remote_server_ip.txt文件，请先设置服务器IP")
             return False
 
+        # 如果是本地服务器IP，检查zoffline进程
+        if server_ip == "127.0.0.1":
+            processes = check_processes()
+            if processes and not processes['zoffline_local']:
+                print("[提示] 本地服务器未运行，正在启动...")
+                if not start_local_server():
+                    print("[错误] 本地服务器启动失败")
+                    return False
+                print("[成功] 本地服务器已启动")
+
         if not check_community_version(server_ip):
             return False
         
         zwift_path = find_zwift_location()
     
-        # # 新增逻辑: 查找所有 Zwift_ver_cur.xxxxxx.xml 文件
-        # version_files = []
-        # for file in os.listdir(zwift_path):
-        #     if file.startswith("Zwift_ver_cur.") and file.endswith(".xml"):
-        #         parts = file.split(".")
-        #         print(parts)
-        #         if len(parts) == 3 and parts[1].isdigit():
-        #             version_number = int(parts[1])
-        #             print(version_number)
-        #             version_files.append((file, version_number))
-        
-        # if not version_files:
-        #     print("[错误] 未找到任何 Zwift_ver_cur.xxxxxx.xml 文件，如果你的版本是1.80.0，请先更新，换用新的逻辑")
-        #     return False
-        
-        # # 选择最高版本号的文件
-        # version_files.sort(key=lambda x: x[1], reverse=True)
-        # selected_file, selected_version = version_files[0]
-        # print(f"选择的版本文件: {selected_file} (版本号: {selected_version})")
-        
-        # # 复制选择的文件为 Zwift_ver_cur.xml
-        # source_xml = os.path.join(zwift_path, selected_file)
-        # target_xml = os.path.join(zwift_path, "Zwift_ver_cur.xml")
-        # shutil.copy2(source_xml, target_xml)
-        # print(f"已复制 {selected_file} 为 Zwift_ver_cur.xml")
-        
-        # # 更新 Zwift_ver_cur_filename.txt
-        # version_file_path = os.path.join(zwift_path, "Zwift_ver_cur_filename.txt")
-        # with open(version_file_path, 'w', encoding='utf-8') as f:
-        #     # f.write(f'{selected_file}')
-        #     f.write('Zwift_ver_cur.xml')
-        # print(f"已更新 Zwift_ver_cur_filename.txt 为: {selected_file}")
-        
         # 启动ZwiftLauncher
         launcher_path = os.path.join(zwift_path, "ZwiftLauncher.exe")
         if not os.path.exists(launcher_path):
@@ -1726,7 +1706,7 @@ def start_local_server():
         exe_files = [f for f in os.listdir('.') if f.startswith('zoffline') and f.endswith('.exe')]
         
         if not exe_files:
-            sg.popup_error('未找到本地服务器文件\n请先下载本地服务器', title='错误')
+            sg.popup_error('未找到本地服务器文件\n请先点击"工具"-"下载本地服务器"', title='错误')
             return False
             
         # 对版本进行排序，选择最新版本
@@ -1744,12 +1724,12 @@ def start_local_server():
             
         # 创建选择窗口
         layout = [
-            [sg.Text('请选择要启动的服务器版本：')],
+            [sg.Text('请选择要启动的本地服务器版本：')],
             [sg.Combo(exe_files, default_value=latest_version, key='-VERSION-', size=(40, 1))],
             [sg.Button('启动'), sg.Button('取消')]
         ]
         
-        window = sg.Window('选择服务器版本', layout, modal=True)
+        window = sg.Window('选择本地服务器版本', layout, modal=True)
         event, values = window.read()
         window.close()
         
