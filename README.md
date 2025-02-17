@@ -104,15 +104,8 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 2. 程序会自动清理社区服务器的配置
 3. 启动官方版本的 Zwift
 
-### 故障排查 | Troubleshooting
 
-程序提供了多个诊断工具：
-- 检查系统代理
-- 检查端口占用
-- 测试连通性
-- 版本检查
-
-## 工作原理 | How it works
+## 工作原理【大陆地区网络特殊】 | How it works [Special for mainland China]
 • 官服 Zwift 连接:
 ```
    [Your PC]  ===============> [Zwift Official Servers]
@@ -120,7 +113,7 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
    - Default hosts file       - secure.zwift.com
    - Zwift SSL certificates   - cdn.zwift.com
                               - launcher.zwift.com
-   Ports: 80(HTTP), 443(HTTPS), 3025(TCP)(Game),3024(UDP)(Game)
+   Ports: 80(HTTP), 443(HTTPS), 3025(TCP)(Game), 3024(UDP)(Game)
 ```
 • 社区服连接:
 ```
@@ -140,9 +133,6 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
       - Reverse proxy for all Zwift domains
       - Remove Host header to avoid Chinese government hijacking [HTTP]
       - Repalce SNI to avoid Chinese government hijacking [HTTPS]
-   4. Network Flow:
-      Client --> Local Caddy --> Remote Server
-      [80/443/3025/3024] --> [Proxy] --> [Remote Port]
 ```
 
 ## 致谢项
