@@ -5,23 +5,25 @@
 
 Zoffline-CN-Tool is a GUI tool for switching between Zwift's official servers and community servers ([Zwift-Offline](https://github.com/zoffline/zwift-offline)), and it now supports English.
 
-Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 社区服 在大陆地区特殊网络环境的相关的配置任务[本地反代+自签证书]。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
+Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 社区服 在大陆地区特殊网络环境的相关的配置任务 [ 本地反代+自签证书 ]。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
+
+![搜索](main.jpg)
 
 ## 功能特点 | Features
 
 ### 主要功能 | Main Features
-- 一键启动社区服 Zwift
-- 多个远程社区服务器切换管理功能
-- 一键启动本地运行的社区服 Zwift
+- 一键启动 [ 远程 | 本地 ] 社区服 Zwift
+- 多个远程社区服切换管理
+- 自动检查服务端版本和本地版本差异，并提供任意版本切换
 - 一键启动官服 Zwift
-- 自动检查社区服版本和本地版本
+
 
 ### 高级选项 | Advanced Options
 - 自动 Host 设置
 - 自动系统证书导入
 - 自动客户端证书导入
 - Caddy 反向代理后台单独启动
-- 自动下载[Zwift-Offline](https://github.com/zoffline/zwift-offline)本地服务端后台单独启动
+- 自动下载[Zwift-Offline](https://github.com/zoffline/zwift-offline)本地服务端后台单独启动[GitHub Release源]
 - 版本查询和管理
 - 系统代理检查
 - 端口占用检查并终止
@@ -30,7 +32,26 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 
 ## 注意事项 | Attention
 
-- 使用社区服务器功能需要先获取有效的Zoffline社区服务器 IP 地址，并获取由Zoffline社区服务器提供的证书和密钥文件。[现已支持使用config文件一键传递]
+- 使用社区服务器功能需要先获取有效的Zoffline社区服务器 IP 地址，并获取由Zoffline社区服务器提供的证书和密钥文件。现已支持使用servers.json文件一键传递，示例的格式如下：
+``` json
+// servers.json
+[
+  {
+    "ip": "127.0.0.1",
+    "latency": "Timeout",
+    "players": "0",
+    "note": "本地服务器"
+  },
+  {
+    "ip": "社区服务器 IP",
+    "latency": "13ms",
+    "players": "0",
+    "note": "**车队内部训练服",
+    "cert": "证书文件内容",
+    "key": "密钥文件内容"
+  }
+]
+```
 
 ## TODO list
 - [ ] 添加DNS解析的功能，实现服务端动态IP绑定的域名也能成功连接
@@ -51,8 +72,8 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 
 ### 使用预编译程序 | Using Pre-compiled Release
 
-1. 从 Release 页面下载最新版本的 Zoffline-CN-Tool
-2. 解压到任意目录
+1. 从 Release 页面下载最新版本的 Zoffline-CN-Tool.exe
+2. 放置到合适的目录
 3. 以管理员身份运行程序
 
 ### 从源码构建 | Building from Source
@@ -80,7 +101,7 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
    python -m PyInstaller --clean --onefile --uac-admin --icon=logo.ico --add-data "*.pem;." --add-data "*.p12;." --add-data "caddy.exe;." --add-data "Caddyfile;." --add-data "SEU.ico;." --add-data "NUCU.ico;." --name "Zoffline-CN-Tool" Zoffline_CN_Tool.py
    ```
 
-注意：无论使用哪种方式，都需要管理员权限来运行程序。【为什么？因为我们需要修改系统hosts文件，需要管理员权限】
+注意：无论使用哪种方式，都需要管理员权限来运行程序。
 
 ## 使用指南 | Usage Guide
 
@@ -95,9 +116,10 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 ### 切换服务器 | Switch Server
 
 #### 切换到社区服务器 | Switch to Community Server
-1. 点击"一键启动社区服 Zwift"
-2. 等待程序完成所有必要的配置
-3. 程序会自动启动 Zwift
+1. 点击"管理服务器"，选择你所需要连接的社区服，单击
+2. 点击"一键启动社区服 Zwift"
+3. 等待程序完成所有必要的配置
+4. 程序会自动启动 Zwift
 
 #### 切换到官方服务器 | Switch to Official Server
 1. 点击"一键启动官服 Zwift"
@@ -146,7 +168,9 @@ Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区�
 
 ## 免责声明
 
-本工具仅用于学习和研究目的。用户需要遵守相关服务条款和法律法规。使用本工具所产生的任何后果由用户自行承担。
+本工具仅用于学习和研究目的，本仓库从未提供任何在线服务。
+
+用户需要遵守相关服务条款和法律法规。使用本工具所产生的任何后果由用户自行承担。
 
 Zwift 是 Zwift, Inc. 的商标,该公司与本项目的制作者没有关联,也不认可本项目。
 

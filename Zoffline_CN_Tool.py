@@ -87,7 +87,7 @@ def create_main_window():
         [
             sg.Text('https://github.com/kanhao100/zoffline-cn-tool', text_color='blue', enable_events=True, key='-GITHUB-LINK-'),
             sg.Push(),
-            sg.Text('东南大学猎风车队|南京高校联队', pad=(10, 5))
+            sg.Text('请给Star,谢谢!', pad=(10, 5))
         ]
     ]
     
