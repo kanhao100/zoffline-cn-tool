@@ -5,7 +5,7 @@
 
 Zoffline-CN-Tool is a GUI tool for switching between Zwift's official servers and community servers ([Zwift-Offline](https://github.com/zoffline/zwift-offline)), and it now supports English.
 
-Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 在大陆地区特殊网络环境的相关的配置任务。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
+Zoffline-CN-Tool 是一个用于管理和切换 Zwift 官方服务器与社区服务器的图形化工具。它提供了一个简单的界面来帮助用户完成 Zoffline 社区服 在大陆地区特殊网络环境的相关的配置任务[本地反代+自签证书]。对于Zoffline-CN 的更多信息，请访问分支 https://github.com/kanhao100/zwift-offline
 
 ## 功能特点 | Features
 
