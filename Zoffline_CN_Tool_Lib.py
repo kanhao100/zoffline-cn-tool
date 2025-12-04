@@ -1518,7 +1518,9 @@ def download_single_file(base_url, folder, path, length, checksum, local_path):
     
     # 下载文件直到校验和匹配
     while not os.path.isfile(file_name) or os.path.getsize(file_name) != length or (crc32(open(file_name, 'rb').read()) != checksum and checksum != 4294967295):
-        response = PoolManager().request('GET', f'{base_url}{folder}/{path.replace("\\", "/")}')
+        # f-string 的表达式内部不能包含反斜杠，这里先预处理路径再拼接 URL
+        url_path = path.replace('\\', '/')
+        response = PoolManager().request('GET', f'{base_url}{folder}/{url_path}')
         with open(file_name, 'wb') as f:
             f.write(response.data)
 
